@@ -5,12 +5,15 @@ class User(models.Model):
     USER_TYPE_CHOICES = (
         ('admin', 'Administrator'),
         ('investigator', 'Investigator'),
-        ('whistleblower', 'Whistleblower'),
+        ('reporter', 'Reporter'),
     )
 
-    username = models.CharField(max_length=255, unique=True)
-    email = models.EmailField(unique=True)
-    user_type = models.CharField(max_length=15, choices=USER_TYPE_CHOICES)
+    fullname = models.CharField(max_length=255, unique=True)
+    address = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=15, unique=True)    
+    email = models.EmailField(unique=True)    
+    password = models.CharField(max_length=128)    
+    user_type = models.CharField(max_length=15, choices=USER_TYPE_CHOICES , default='reporter')
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
