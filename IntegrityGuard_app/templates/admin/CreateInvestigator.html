@@ -19,11 +19,12 @@
             margin: 0;
             padding: 0;
         }
+
         .sidebar {
             background: linear-gradient(to bottom, #007bff, #00f2fe);
             color: #fff;
             height: 100vh;
-            width: 250px;
+            width: 270px;
             position: fixed;
             padding: 30px 20px;
             box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.1);
@@ -84,13 +85,13 @@
             border-radius: 10px;
             max-width: 1200px;
             width: 100%;
+            height: 84vh;
         }
 
         .dashboard-container h2 {
             color: #007bff;
             font-weight: bold;
-            margin-bottom: 30px;
-            text-align: center;
+            font-size: 1.7em;
         }
 
         .stat-box {
@@ -123,8 +124,6 @@
         /* Chart Styling */
         .chart-container {
             margin-top: 40px;
-            width: 50%;
-            margin-left: 20%;
         }
 
         .chart-container h5 {
@@ -152,6 +151,9 @@
             height: 40px;
             margin-right: 10px;
         }
+        .dashboard-container h3{
+            color: green;
+        }
     </style>
 </head>
 
@@ -163,21 +165,21 @@
             <h5>{{ name }}</h5>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a href="{% url 'reporter_dashboard' %}" 
-                       class="nav-link {% if request.resolver_match.url_name == 'reporter_dashboard' %}active{% endif %}">
+                    <a href="{% url 'admin_dashboard' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
                         <i class="bi bi-house-door-fill me-2"></i> Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'create_view' %}" 
-                       class="nav-link {% if request.resolver_match.url_name == 'create_view' %}active{% endif %}">
-                        <i class="bi bi-plus-circle me-2"></i> Create Case
+                    <a href="{% url 'investigator_create' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'investigator_create' %}active{% endif %}">
+                        <i class="bi bi-plus-circle me-2"></i> Investigator
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'reporter_view' %}" 
-                       class="nav-link {% if request.resolver_match.url_name == 'reporter_view' %}active{% endif %}">
-                        <i class="bi bi-file-earmark-bar-graph me-2"></i> View Reports
+                    <a href="{% url 'view_all_Cases' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'view_all_Cases' %}active{% endif %}">
+                        <i class="bi bi-file-earmark-bar-graph me-2"></i> View Cases 
                     </a>
                 </li>
             </ul>
@@ -187,7 +189,8 @@
             <nav class="navbar navbar-expand-lg navbar-custom">
                 <span> Welcome &nbsp;&nbsp; {{ name }}</span>
                 <div class="dropdown ms-auto">
-                    <button class="btn text-white dropdown-toggle" type="button" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn text-white dropdown-toggle" type="button" id="navbarDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
                         <span>{{role}}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -197,32 +200,44 @@
             </nav>
 
             <div class="dashboard-container">
-                <h2>Reporter Dashboard</h2>
-
-                <div class="row text-center">
-                    <div class="col-md-4 mb-3">
-                        <div class="stat-box">
-                            <h3>{{ total_cases }}</h3>
-                            <p>Total Cases Reported</p>
+                 <!-- Case Form -->
+                 <div class="case-container text-left">
+                    <div class="d-flex justify-content-between mb-5">
+                        <div>
+                            <h2>Manage Investigator</h2>
                         </div>
+                        <!-- Changed icon to chevron-left -->
+                        <a href="{% url 'investigator_view' %}" class="btn btn-primary">
+                            <i class="bi bi-chevron-left me-2"></i> Back to List
+                        </a>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="stat-box">
-                            <h3>{{ cases_under_investigation }}</h3>
-                            <p>Under Investigation</p>
-                        </div>
+                    
+                    {% if messages %}
+                    <div class="alert alert-info text-left alert-dismissible fade show mt-4" role="alert">
+                        <ul class="list-unstyled">
+                            {% for message in messages %}
+                            <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="stat-box">
-                            <h3>{{ resolved_cases }}</h3>
-                            <p>Resolved Cases</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <h5>Case Status Overview</h5>
-                    <canvas id="caseStatusChart"></canvas>
+                    {% endif %}
+                    <form method="post" class="mt-4 " action="{% url 'investigator_create' %}">
+                        {% csrf_token %}
+                            <div class="mb-3">
+                                <input type="text" name="fullname" class="form-control p-3" placeholder="Full Name" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="text" name="address" class="form-control p-3" placeholder="Address" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="text" name="phone_number" class="form-control p-3" placeholder="Phone Number" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="email" name="email" class="form-control p-3" placeholder="Email" required>
+                            </div>  
+                            <button type="submit" class="btn btn-primary w-100">Submit</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -230,37 +245,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const ctx = document.getElementById('caseStatusChart').getContext('2d');
-        const caseStatusChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Reported', 'Under Investigation', 'Resolved'],
-                datasets: [{
-                    label: 'Case Status Distribution',
-                    data: [{{ pending_cases  }}, {{ cases_under_investigation }}, {{ resolved_cases }}],
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.6)',
-                        'rgba(255, 206, 86, 0.6)',
-                        'rgba(75, 192, 192, 0.6)'
-                    ],
-                    borderColor: [
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
-                }
-            }
-        });
+    
     </script>
 </body>
+
 </html>

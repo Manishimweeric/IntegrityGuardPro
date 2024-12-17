@@ -29,7 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-# Application definition
+# Application definitionb
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -71,6 +71,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'IntegrityGuard.wsgi.application'
+
 
 
 # Database

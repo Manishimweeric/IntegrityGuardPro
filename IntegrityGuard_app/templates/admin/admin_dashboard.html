@@ -1,0 +1,344 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporter Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #4facfe, #00f2fe);
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            background: linear-gradient(to bottom, #007bff, #00f2fe);
+            color: #fff;
+            height: 100vh;
+            width: 270px;
+            position: fixed;
+            padding: 30px 20px;
+            box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h4 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .sidebar h5 {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .sidebar .nav-link {
+            color: black;
+            font-size: 1rem;
+            padding: 12px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.3rem;
+            margin-right: 10px;
+        }
+
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:hover {
+            background-color: rgb(131, 96, 32);
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .sidebar .nav-item:not(:last-child) {
+            margin-bottom: 15px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+            flex-grow: 1;
+            background-color: #f4f6f9;
+        }
+
+        .dashboard-container {
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .dashboard-container h2 {
+            color: #007bff;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #333;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            background: #007bff;
+            color: #fff;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-box h3 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .stat-box p {
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        /* Chart Styling */
+        .chart-container {
+            margin-top: 40px;
+        }
+
+        .chart-container h5 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Navbar Styling */
+        .navbar-custom {
+            background: linear-gradient(to bottom, #007bff, #00f2fe);
+            padding: 10px 30px;
+            border-radius: 5px;
+            color: white;
+            position: fixed;
+            width: 85%;
+            z-index: 1000;
+            top: 0;
+        }
+
+        .navbar-custom img {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+        .dashboard-container h3{
+            color: green;
+        }
+
+        
+
+    </style>
+</head>
+
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h4>IntegrityGuard Pro</h4>
+            <h5>{{ name }}</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'admin_dashboard' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                        <i class="bi bi-house-door-fill me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'investigator_view' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'investigator_view' %}active{% endif %}">
+                        <i class="bi bi-file-earmark-bar-graph me-2"></i> Investigators
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'view_all_Cases' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'view_all_Cases' %}active{% endif %}">
+                        <i class="bi bi-file-earmark-bar-graph me-2"></i> View Cases 
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <nav class="navbar navbar-expand-lg navbar-custom">
+                <span> Welcome &nbsp;&nbsp; {{ name }}</span>
+                <div class="dropdown ms-auto">
+                    <button class="btn text-white dropdown-toggle" type="button" id="navbarDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <span>{{role}}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="dashboard-container">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-box">
+                            <h3>{{ total_cases }}</h3>
+                            <p>Total Cases Reported</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-box">
+                            <h3>{{ pending_cases }}</h3>
+                            <p>Pending Cases Reported</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-box">
+                            <h3>{{ cases_under_investigation }}</h3>
+                            <p>Under Investigation</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-box">
+                            <h3>{{ resolved_cases }}</h3>
+                            <p>Resolved Cases</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container d-flex justify-content-between">
+                    <!-- Case Status Chart -->
+                    <div class="case-status-chart" style="flex: 1; margin-right: 20px;">
+                        <h5>Case Status Overview</h5>
+                        <canvas id="caseStatusChart"></canvas>
+                    </div>
+                
+                    <!-- User Role Distribution Chart -->
+                    <div class="user-role-chart" style="flex: 1; margin-left: 20px;">
+                        <h5>User Role Distribution</h5>
+                        <canvas id="userRoleChart"></canvas>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+       try {
+            const ctx = document.getElementById('caseStatusChart').getContext('2d');
+            const caseStatusChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Reported', 'Under Investigation', 'Resolved'],
+                    datasets: [{
+                        label: 'Case Status Distribution',
+                        data: [{{ pending_cases|default:0 }}, {{ cases_under_investigation|default:0 }}, {{ resolved_cases|default:0 }}],
+
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error rendering chart:", error);
+        }
+
+    </script>
+
+
+<script>
+    const userRoleCtx = document.getElementById('userRoleChart').getContext('2d');
+    const userRoleChart = new Chart(userRoleCtx, {
+        type: 'bar',  // Bar chart for user roles
+        data: {
+            labels: ['Investigator', 'Reporter'],  // Only show Investigator and Reporter
+            datasets: [{
+                label: 'User Role Distribution',
+                data: [{{ investigator_users }}, {{ reporter_users }}],  // Data for Investigator and Reporter
+                backgroundColor: [
+                    'rgba(255, 206, 86, 0.6)', // Investigator
+                    'rgba(75, 192, 192, 0.6)'  // Reporter
+                ],
+                borderColor: [
+                    'rgba(255, 206, 86, 1)',  // Investigator
+                    'rgba(75, 192, 192, 1)'   // Reporter
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'User Role'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Number of Users'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+</body>
+
+</html>
