@@ -8,9 +8,9 @@ class User(models.Model):
         ('reporter', 'Reporter'),
     )
 
-    fullname = models.CharField(max_length=255, unique=True)
+    fullname = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=15, unique=True)    
+    phone_number = models.CharField(max_length=15)    
     email = models.EmailField(unique=True)    
     password = models.CharField(max_length=128)    
     user_type = models.CharField(max_length=15, choices=USER_TYPE_CHOICES , default='reporter')

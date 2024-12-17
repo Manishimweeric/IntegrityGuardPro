@@ -25,7 +25,7 @@
             padding: 30px;
             border-radius: 10px;
             margin-left: 35%;
-            margin-top: 15vh;
+            margin-top: 8vh;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
         }
 
@@ -66,7 +66,6 @@
 
         .bi-person-circle {
             color: #007bff;
-            
         }
 
         /* Navbar Customization */
@@ -119,11 +118,26 @@
         </div>
     </nav>
 
+    <!-- Message Display Section -->
+    <div class="col-md-2">
+       
+    </div>
+
     <!-- Signup Form -->
     <div class="signup-container text-center">
         <i class="bi bi-person-circle" style="font-size: 50px;color: #007bff;margin-bottom: 10px;"></i>
         <h2>Create an Account</h2>
-        <form method="post" action="{% url 'signup' %}">
+        {% if messages %}
+        <div class="alert alert-info text-left alert-dismissible fade show mt-4" role="alert">
+            <ul class="list-unstyled">
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        <form method="post" class="mt-4" action="{% url 'signup' %}">
             {% csrf_token %}
             <div class="mb-3">
                 <input type="text" name="fullname" class="form-control" placeholder="Full Name" required>
@@ -136,7 +150,7 @@
             </div>
             <div class="mb-3">
                 <input type="email" name="email" class="form-control" placeholder="Email" required>
-            </div>
+            </div>  
             <div class="mb-3">
                 <input type="password" name="password" class="form-control" placeholder="Password" required>
             </div>

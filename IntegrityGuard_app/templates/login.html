@@ -140,6 +140,16 @@
     <div class="login-container text-center align-items-center" >
         <i class="bi bi-lock-fill"></i>
         <h2>Welcome Back</h2>
+        {% if messages %}
+        <div class="alert alert-danger text-left alert-dismissible fade show mt-4" role="alert">
+            <ul class="list-unstyled">
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
         <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
             <div class="mb-3">
