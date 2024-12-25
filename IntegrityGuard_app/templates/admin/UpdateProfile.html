@@ -8,13 +8,12 @@
     <title>Reporter Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(to bottom, #4facfe, #00f2fe);
             font-family: 'Poppins', sans-serif;
+            color: #fff;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -87,13 +86,15 @@
             border-radius: 10px;
             max-width: 1200px;
             width: 100%;
+            height: 84vh;
         }
 
         .dashboard-container h2 {
             color: #007bff;
             font-weight: bold;
+            font-size: 1.3em;
             margin-bottom: 30px;
-            text-align: center;
+
         }
 
         .stat-box {
@@ -139,12 +140,15 @@
         .navbar-custom {
             background: linear-gradient(to bottom, #007bff, #00f2fe);
             padding: 10px 30px;
+            margin-top: 0px;
             border-radius: 5px;
             color: white;
             position: fixed;
             width: 85%;
             z-index: 1000;
             top: 0;
+
+
         }
 
         .navbar-custom img {
@@ -153,12 +157,40 @@
             height: 40px;
             margin-right: 10px;
         }
-        .dashboard-container h3{
-            color: green;
+
+        .dashboard-container {
+            max-width: 50%;
+            margin: 50px auto;
         }
 
-        
+        .form-control {
+            border-radius: 0.5rem;
+        }
 
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .form-label {
+            font-weight: bold;
+        }
+
+        .alert-info {
+            margin-top: 20px;
+        }
+
+        .btn-outline-secondary {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+        }
     </style>
 </head>
 
@@ -167,7 +199,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <h4>IntegrityGuard Pro</h4>
-            <h5>{{ name }}</h5>
+            <h5>{{name}}</h5>
             <ul class="nav flex-column">
                 <li class="nav-item">
                     <a href="{% url 'admin_dashboard' %}"
@@ -193,167 +225,119 @@
                         <i class="bi bi-check-circle-fill me-2"></i> Solved Report Cases
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{% url 'contact_dicplayed' %}"
-                       class="nav-link {% if request.resolver_match.url_name == 'contact_dicplayed' %}active{% endif %}">
-                        <i class="bi bi-heart-fill me-2"></i> Support us
-                    </a>
-                </li>                  
                 
             </ul>
         </div>
 
+
+        <!-- Main Content -->
         <div class="main-content">
+            <!-- Navbar -->
             <nav class="navbar navbar-expand-lg navbar-custom">
-                <span> Welcome &nbsp;&nbsp; {{ name }}</span>
+                <!-- Remove the image and keep the icon -->
+                <span> Welcome &nbsp;&nbsp; {{name}}</span>
                 <div class="dropdown ms-auto">
-                    <button class="btn text-white dropdown-toggle" type="button" id="navbarDropdown"
+                    <button class="btn  text-white dropdown-toggle" type="button" id="navbarDropdown"
                         data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Icon for user profile -->
                         <span>{{role}}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="{% url 'Updatesadmin' %}">Profile </a></li>
-                        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>                        
                     </ul>
                 </div>
             </nav>
 
+            <!-- Dashboard -->
             <div class="dashboard-container">
-                <div class="row text-center">
-                    <div class="col-md-3 mb-3">
-                        <div class="stat-box">
-                            <h3>{{ total_cases }}</h3>
-                            <p>Total Cases Reported</p>
-                        </div>
+                <!-- Case Form -->
+                <div class="case-container text-left">
+                    <div class="text-center ">
+                        <!-- User Icon -->
+                        <i class="bi bi-person-circle text-primary fs-1"></i>
+                        <!-- Heading -->
+                        <h4 class="text-center text-primary fs-3 mt-2">Edit Profile</h4>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="stat-box">
-                            <h3>{{ pending_cases }}</h3>
-                            <p>Pending Cases Reported</p>
-                        </div>
+                    
+                    {% if messages %}
+                    <div class="alert alert-info text-left alert-dismissible fade show mt-4" role="alert">
+                        <ul class="list-unstyled">
+                            {% for message in messages %}
+                            <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="stat-box">
-                            <h3>{{ cases_under_investigation }}</h3>
-                            <p>Under Investigation</p>
+                    {% endif %}
+                    <!-- Case Form -->
+                    <form method="post" class="mt-4 text-black" action="{% url 'Updatesadmin' %}">
+                        {% csrf_token %}
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label for="fullname" class="form-label">Full Name</label>
+                            <input type="text" id="fullname" name="fullname" class="form-control p-3"
+                                placeholder="Full Name" value="{{ user.fullname }}" required>
                         </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="stat-box">
-                            <h3>{{ resolved_cases }}</h3>
-                            <p>Resolved Cases</p>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="chart-container d-flex justify-content-between">
-                    <!-- Case Status Chart -->
-                    <div class="case-status-chart" style="flex: 1; margin-right: 20px;">
-                        <h5>Case Status Overview</h5>
-                        <canvas id="caseStatusChart"></canvas>
-                    </div>
-                
-                    <!-- User Role Distribution Chart -->
-                    <div class="user-role-chart" style="flex: 1; margin-left: 20px;">
-                        <h5>User Role Distribution</h5>
-                        <canvas id="userRoleChart"></canvas>
-                    </div>
+                        <!-- Address -->
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" id="address" name="address" class="form-control p-3"
+                                placeholder="Address" value="{{ user.address }}" required>
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="text" id="phone_number" name="phone_number" class="form-control p-3"
+                                placeholder="Phone Number" value="{{ user.phone_number }}" required>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" name="email" class="form-control p-3" placeholder="Email"
+                                value="{{ user.email }}" required>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3 position-relative">
+                            <label for="password" class="form-label ">Password</label>
+                            <input type="password" id="password" name="password" class="form-control p-3"
+                                placeholder="Password" value="{{ user.password }}" required>
+                            <button type="button" id="togglePassword"
+                                class="btn btn-outline-secondary position-absolute top-30 end-0 translate-middle-y"
+                                style="margin-top: 15px; border: 0px solid; ">
+                                <i class="bi bi-eye-slash"></i>
+                            </button>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100 mt-4">Save Changes </button>
+                    </form>
                 </div>
-                
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 
     <script>
-       try {
-            const ctx = document.getElementById('caseStatusChart').getContext('2d');
-            const caseStatusChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Reported', 'Under Investigation', 'Resolved'],
-                    datasets: [{
-                        label: 'Case Status Distribution',
-                        data: [{{ pending_cases|default:0 }}, {{ cases_under_investigation|default:0 }}, {{ resolved_cases|default:0 }}],
+        // Show/Hide Password Functionality
+        const togglePassword = document.querySelector("#togglePassword");
+        const passwordField = document.querySelector("#password");
 
-                        backgroundColor: [
-                            'rgba(54, 162, 235, 0.6)',
-                            'rgba(255, 206, 86, 0.6)',
-                            'rgba(75, 192, 192, 0.6)'
-                        ],
-                        borderColor: [
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    }
-                }
-            });
-        } catch (error) {
-            console.error("Error rendering chart:", error);
-        }
-
+        togglePassword.addEventListener("click", function () {
+            const type = passwordField.type === "password" ? "text" : "password";
+            passwordField.type = type;
+            this.innerHTML = type === "password" ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+        });
     </script>
-
-
-<script>
-    const userRoleCtx = document.getElementById('userRoleChart').getContext('2d');
-    const userRoleChart = new Chart(userRoleCtx, {
-        type: 'bar',  // Bar chart for user roles
-        data: {
-            labels: ['Investigator', 'Reporter'],  // Only show Investigator and Reporter
-            datasets: [{
-                label: 'User Role Distribution',
-                data: [{{ investigator_users }}, {{ reporter_users }}],  // Data for Investigator and Reporter
-                backgroundColor: [
-                    'rgba(255, 206, 86, 0.6)', // Investigator
-                    'rgba(75, 192, 192, 0.6)'  // Reporter
-                ],
-                borderColor: [
-                    'rgba(255, 206, 86, 1)',  // Investigator
-                    'rgba(75, 192, 192, 1)'   // Reporter
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'User Role'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Number of Users'
-                    },
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-</script>
 </body>
 
 </html>

@@ -8,10 +8,11 @@
     <title>Reporter Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(to bottom, #4facfe, #00f2fe);
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             color: #fff;
             min-height: 100vh;
             display: flex;
@@ -90,8 +91,8 @@
 
         .dashboard-container h2 {
             color: #007bff;
-            font-weight: bold;
-            font-size: 1.7em;
+
+            font-size: 1.5em;
         }
 
         .stat-box {
@@ -167,21 +168,34 @@
                 <li class="nav-item">
                     <a href="{% url 'admin_dashboard' %}"
                         class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-                        <i class="bi bi-house-door-fill me-2"></i> Dashboard
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'investigator_create' %}"
-                        class="nav-link {% if request.resolver_match.url_name == 'investigator_create' %}active{% endif %}">
-                        <i class="bi bi-plus-circle me-2"></i> Investigator
+                    <a href="{% url 'investigator_view' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'investigator_view' %}active{% endif %}">
+                        <i class="bi bi-person-badge-fill me-2"></i> Investigators
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{% url 'view_all_Cases' %}"
                         class="nav-link {% if request.resolver_match.url_name == 'view_all_Cases' %}active{% endif %}">
-                        <i class="bi bi-file-earmark-bar-graph me-2"></i> View Cases 
+                        <i class="bi bi-briefcase-fill me-2"></i> View Cases 
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_solved' %}"
+                       class="nav-link {% if request.resolver_match.url_name == 'admin_solved' %}active{% endif %}">
+                        <i class="bi bi-check-circle-fill me-2"></i> Solved Report Cases
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'contact_dicplayed' %}"
+                       class="nav-link {% if request.resolver_match.url_name == 'contact_dicplayed' %}active{% endif %}">
+                        <i class="bi bi-heart-fill me-2"></i> Support us
+                    </a>
+                </li>     
+                
             </ul>
         </div>
 
@@ -194,6 +208,7 @@
                         <span>{{role}}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'Updatesadmin' %}">Profile </a></li>
                         <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                     </ul>
                 </div>

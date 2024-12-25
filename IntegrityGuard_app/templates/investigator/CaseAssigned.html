@@ -232,35 +232,35 @@
             <h5>{{ name }}</h5>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a href="{% url 'admin_dashboard' %}"
-                        class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <a href="{% url 'investigator_dashboard' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'investigator_dashboard' %}active{% endif %}">
                         <i class="bi bi-speedometer2 me-2"></i> Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'investigator_view' %}"
-                        class="nav-link {% if request.resolver_match.url_name == 'investigator_view' %}active{% endif %}">
-                        <i class="bi bi-person-badge-fill me-2"></i> Investigators
+                    <a href="{% url 'collabration' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'collabration' %}active{% endif %}">
+                        <i class="bi bi-people me-2"></i> Collaboration
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'view_all_Cases' %}"
-                        class="nav-link {% if request.resolver_match.url_name == 'view_all_Cases' %}active{% endif %}">
-                        <i class="bi bi-briefcase-fill me-2"></i> View Cases 
+                    <a href="{% url 'messages' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'messages' %}active{% endif %}">
+                        <i class="bi bi-envelope-fill me-2"></i> Messages
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'admin_solved' %}"
-                       class="nav-link {% if request.resolver_match.url_name == 'admin_solved' %}active{% endif %}">
-                        <i class="bi bi-check-circle-fill me-2"></i> Solved Report Cases
+                    <a href="{% url 'investigetor_case' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'investigetor_case' %}active{% endif %}">
+                        <i class="bi bi-briefcase-fill me-2"></i> Assigned Cases
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'contact_dicplayed' %}"
-                       class="nav-link {% if request.resolver_match.url_name == 'contact_dicplayed' %}active{% endif %}">
-                        <i class="bi bi-heart-fill me-2"></i> Support us
+                    <a href="{% url 'investigetor_solved' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'investigetor_solved' %}active{% endif %}">
+                        <i class="bi bi-check-circle-fill me-2"></i> Solved Cases
                     </a>
-                </li>               
+                </li>
                 
             </ul>
         </div>
@@ -274,7 +274,7 @@
                         <span>{{role}}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'Updatesadmin' %}">Profile </a></li>
+                        <li><a class="dropdown-item" href="{% url 'Updatesinvestigetor' %}">Profile </a></li>
                         <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                     </ul>
                 </div>
@@ -286,20 +286,23 @@
                 
                         <!-- Filter Buttons -->
                         <div class="filter-buttons mb-4" style="margin-top: -43px;">
-                            <a href="{% url 'cases_list' %}" class="btn btn-outline-primary {% if not request.GET.status %}active{% endif %}" style="margin-left: 20%;">
+                            <a href="{% url 'investigetor_case' %}" class="btn btn-outline-primary {% if not request.GET.status %}active{% endif %}" style="margin-left: 20%;">
                                 All
                             </a>
-                            <a href="{% url 'cases_list' %}?status=reported" class="btn btn-outline-primary {% if request.GET.status == 'reported' %}active{% endif %}"  style="margin-left: 5%;">
-                                New
-                            </a>
-                            <a href="{% url 'cases_list' %}?status=under_investigation" class="btn btn-outline-primary {% if request.GET.status == 'under_investigation' %}active{% endif %}"  style="margin-left: 5%;">
-                                Under Investigation
-                            </a>
-                            <a href="{% url 'cases_list' %}?status=resolved" class="btn btn-outline-primary {% if request.GET.status == 'resolved' %}active{% endif %}"  style="margin-left: 5%;">
+                            <a href="{% url 'investigetor_case' %}?status=resolved" class="btn btn-outline-primary {% if request.GET.status == 'resolved' %}active{% endif %}"  style="margin-left: 5%;">
                                 Resolved
                             </a>
                         </div>
-                
+                        {% if messages %}
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <ul class="list-unstyled mb-0">
+                                {% for message in messages %}
+                                <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endif %}
                         {% if cases %}
                         <div class="list-group mt-4">
                             {% for case in cases %}
@@ -311,6 +314,12 @@
                                         <small>
                                             Assigned to: <span style="color: rgb(24, 88, 24);">
                                                 {% if case.assigned_to %}{{ case.assigned_to.fullname }}{% else %}New{% endif %}
+                                            </span>
+                                        </small>
+                                        <br>
+                                        <small>
+                                            Status : <span style="color: rgb(24, 88, 24);">
+                                                {{ case.status }}
                                             </span>
                                         </small>
                                         <br>
@@ -351,41 +360,46 @@
                                     </div>
                                     <div class="modal-footer"
                                         style="background-color: #f8f9fa; border-radius: 0 0 15px 15px;">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Close</button>
+                                        
 
-                                        <!-- Edit Button -->
-                                        <button type="button" class="btn btn-primary {% if case.status != 'reported' %}disabled{% endif %}" 
-                                        data-bs-toggle="collapse" data-bs-target="#editForm{{ case.id }}" 
-                                        {% if case.status != 'reported' %}title="You can only assign investigators to reported cases" disabled{% endif %}>
-                                        <i class="bi bi-person-lines-fill me-2"></i>Assign Investigator
-                                    </button>
+                                                <button type="button" class="btn btn-outline-primary  {% if case.status != 'under_investigation' %}disabled{% endif %}" 
+                                                data-bs-toggle="collapse" data-bs-target="#editForm{{ case.id }}" 
+                                                {% if case.status != 'under_investigation' %}title="You can only assign investigators to reported cases" disabled{% endif %}>
+                                                <i class="bi bi-person-lines-fill me-2"></i>FeedBack
+                                            </button>
+                                            <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
                                     
                                     </div>
-                                    <!-- Edit Form -->
-                                    <div class="collapse" id="editForm{{ case.id }}">
-                                        <form method="post" action="{% url 'Assigned_case' case.id %}"
-                                            style="padding: 20px;">
+                                   <!-- feedback  Form -->
+                                        <div class="collapse" id="editForm{{ case.id }}">
+
+                                            <h4 class="text-primary ps-3" style="padding-left: 2%;">Case Response</h4>
+                                        <form method="post" action="{% url 'Assigned_cases_views' case.id %}" enctype="multipart/form-data" style="padding: 20px;">
                                             {% csrf_token %}
+                                            <!-- Evidence Description -->
                                             <div class="mb-3">
-                                                <label for="title{{ case.id }}" class="form-label text-black">Select
-                                                    Available Investigator</label>
-                                                <select class="form-select" name="investigator"
-                                                    id="investigator{{ case.id }}" required>
-                                                    <option value="">Select Investigator</option>
-                                                    {% for investigator in investigators %}
-                                                    <option value="{{ investigator.id }}" class="mt-2 mb-2">
-                                                        {{investigator.fullname }}</option>
-                                                    {% endfor %}
-                                                </select>
+                                                <label for="description{{ case.id }}" class="form-label text-black">Feedback Messages</label>
+                                                <textarea name="description" id="description{{ case.id }}" class="form-control" rows="4"
+                                                    placeholder="Enter evidence description "></textarea>
                                             </div>
+
+                                            <!-- Upload Evidence File -->
+                                            <div class="mb-3">
+                                                <label for="evidence_file{{ case.id }}" class="form-label text-black">Upload Feedback Document (Option) </label>
+                                                <input type="file" name="evidence_file" id="evidence_file{{ case.id }}" class="form-control">
+                                            </div>
+
+                                            <!-- Submit Button -->
                                             <div class="text-end">
-                                                <button type="submit" class="btn btn-success border ">
-                                                    <i class="bi bi-save me-2"></i>Assigned Changes
+                                                <button type="submit" class="btn btn-success border">
+                                                    <i class="bi bi-save me-2"></i>Send Feedback 
                                                 </button>
                                             </div>
+                                            </div>
                                         </form>
-                                    </div>
+                                        </div>
+
                                 </div>
                             </div>
                         </div>

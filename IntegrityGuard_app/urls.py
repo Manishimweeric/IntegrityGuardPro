@@ -17,5 +17,20 @@ urlpatterns = [
     path('Investigators_create', views.investigators_create, name='investigator_create'),
     path('Investigators_list', views.investigator_List, name='investigator_view'),
     path('edit_case/<int:case_id>/', views.edit_case, name='Assigned_case'),
-     path('casess/', views.cases_list, name='cases_list'),
+    path('casess/', views.cases_list, name='cases_list'),
+    path('collabration/', views.collabration , name='collabration'),
+    path("send-email/", views.send_email_view, name="send_email_view"),
+    path('messages/', views.Messages_view, name="messages"),
+    path('Assigned_case/', views.Investigetor_Case_views, name="investigetor_case"),
+    path('investigetor_solved_Case/', views.Investigetor_Case_views_Solved, name="investigetor_solved"),
+    path('admin_solved_Case/', views.admin_Case_views_Solved, name="admin_solved"),
+    path('reporter_solved_Case/', views.Reporter_Case_views_Solved, name="reporter_solved"),
+    path('case/<int:case_id>/assign/', views.assigned_case, name='Assigned_cases_views'),
+    path('userprofilereporter/',views.UpdateReporter, name="Updatesreporter"),
+    path('userprofileinvestigetor/',views.UpdateInvestigetor, name="Updatesinvestigetor"),
+    path('userprofileadmin/',views.Updateadimn, name="Updatesadmin"),
+     path('contact/',views.contact_view, name='contact'),
+     path('contact_display/',views.contactus_display, name='contact_dicplayed'),
+     
 ]   
+
