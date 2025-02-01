@@ -149,19 +149,19 @@ def login_view(request):
 
                 # Redirect based on the user's role
                 if user.user_type == 'admin':
-                    return redirect('admin_dashboard')  # Replace with actual admin dashboard URL
+                    return redirect('admin_dashboard')  
                 elif user.user_type == 'investigator':
-                    return redirect('investigator_dashboard')  # Replace with actual investigator dashboard URL
+                    return redirect('investigator_dashboard')  
                 elif user.user_type == 'reporter':
-                    return redirect('reporter_dashboard')  # Replace with actual reporter dashboard URL
+                    return redirect('reporter_dashboard')  
                 else:
-                    return redirect('home')  # Default redirect, in case the role is not set
+                    return redirect('login ')  
             else:
                 messages.error(request, "Invalid password.")
-                return redirect('login')  # Redirect back to the login page if password is incorrect
+                return redirect('login')  
         except User.DoesNotExist:
             messages.error(request, "No account found with this email.")
-            return redirect('login')  # Redirect back to the login page if email doesn't exist
+            return redirect('login') 
 
     return render(request, 'login.html')
 
