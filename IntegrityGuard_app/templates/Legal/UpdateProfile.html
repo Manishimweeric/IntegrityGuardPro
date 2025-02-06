@@ -157,6 +157,40 @@
             height: 40px;
             margin-right: 10px;
         }
+
+        .dashboard-container {
+            max-width: 50%;
+            margin: 50px auto;
+        }
+
+        .form-control {
+            border-radius: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .form-label {
+            font-weight: bold;
+        }
+
+        .alert-info {
+            margin-top: 20px;
+        }
+
+        .btn-outline-secondary {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+        }
     </style>
 </head>
 
@@ -168,27 +202,21 @@
             <h5>{{name}}</h5>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a href="{% url 'reporter_dashboard' %}"
-                        class="nav-link {% if request.resolver_match.url_name == 'reporter_dashboard' %}active{% endif %}">
+                    <a href="{% url 'Legal_Dashboard' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'Legal_Dashboard' %}active{% endif %}">
                         <i class="bi bi-speedometer2 me-2"></i> Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'create_view' %}"
-                        class="nav-link {% if request.resolver_match.url_name == 'create_view' %}active{% endif %}">
-                        <i class="bi bi-folder-plus me-2"></i> Create Case
+                    <a href="{% url 'Legal_case' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'Legal_case' %}active{% endif %}">
+                        <i class="bi bi-briefcase-fill me-2"></i> Assigned Cases
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'reporter_view' %}"
-                        class="nav-link {% if request.resolver_match.url_name == 'reporter_view' %}active{% endif %}">
-                        <i class="bi bi-journal-text me-2"></i> View Reports
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'reporter_solved' %}"
-                        class="nav-link {% if request.resolver_match.url_name == 'reporter_solved' %}active{% endif %}">
-                        <i class="bi bi-check-circle-fill me-2"></i> Solved Case
+                    <a href="{% url 'Legal_solved' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'Legal_solved' %}active{% endif %}">
+                        <i class="bi bi-check-circle-fill me-2"></i> Solved Cases
                     </a>
                 </li>
                 
@@ -209,7 +237,7 @@
                         <span>{{role}}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'Updatesreporter' %}">Profile </a></li>
+                        <li><a class="dropdown-item" href="{% url 'UpdateslegalProfile' %}">Profile </a></li>
                         <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                         
                     </ul>
@@ -220,7 +248,13 @@
             <div class="dashboard-container">
                 <!-- Case Form -->
                 <div class="case-container text-left">
-                    <h2>Manage Case</h2>
+                    <div class="text-center ">
+                        <!-- User Icon -->
+                        <i class="bi bi-person-circle text-primary fs-1"></i>
+                        <!-- Heading -->
+                        <h4 class="text-center text-primary fs-3 mt-2">Edit Profile</h4>
+                    </div>
+                    
                     {% if messages %}
                     <div class="alert alert-info text-left alert-dismissible fade show mt-4" role="alert">
                         <ul class="list-unstyled">
@@ -231,17 +265,51 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     {% endif %}
-                    <form method="post" class="mt-4 " action="{% url 'create_case' %}">
+                    <!-- Case Form -->
+                    <form method="post" class="mt-4 text-black" action="{% url 'Updatesreporter' %}">
                         {% csrf_token %}
+                        <!-- Full Name -->
                         <div class="mb-3">
-                            <input type="text" name="title" class="form-control col-md-4" placeholder="Case Title"
-                                required style="width: 50%;">
+                            <label for="fullname" class="form-label">Full Name</label>
+                            <input type="text" id="fullname" name="fullname" class="form-control p-3"
+                                placeholder="Full Name" value="{{ user.fullname }}" required>
                         </div>
+
+                        <!-- Address -->
                         <div class="mb-3">
-                            <textarea name="description" class="form-control" placeholder="Case Description" rows="10"
-                                required></textarea>
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" id="address" name="address" class="form-control p-3"
+                                placeholder="Address" value="{{ user.address }}" required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Submit</button>
+
+                        <!-- Phone Number -->
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="text" id="phone_number" name="phone_number" class="form-control p-3"
+                                placeholder="Phone Number" value="{{ user.phone_number }}" required>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" name="email" class="form-control p-3" placeholder="Email"
+                                value="{{ user.email }}" required>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3 position-relative">
+                            <label for="password" class="form-label ">Password</label>
+                            <input type="password" id="password" name="password" class="form-control p-3"
+                                placeholder="Password" value="{{ user.password }}" required>
+                            <button type="button" id="togglePassword"
+                                class="btn btn-outline-secondary position-absolute top-30 end-0 translate-middle-y"
+                                style="margin-top: 15px; border: 0px solid; ">
+                                <i class="bi bi-eye-slash"></i>
+                            </button>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100 mt-4">Save Changes </button>
                     </form>
                 </div>
             </div>
@@ -249,7 +317,22 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script>
+        // Show/Hide Password Functionality
+        const togglePassword = document.querySelector("#togglePassword");
+        const passwordField = document.querySelector("#password");
+
+        togglePassword.addEventListener("click", function () {
+            const type = passwordField.type === "password" ? "text" : "password";
+            passwordField.type = type;
+            this.innerHTML = type === "password" ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+        });
+    </script>
 </body>
 
 </html>

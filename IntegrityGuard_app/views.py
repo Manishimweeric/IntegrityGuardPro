@@ -595,6 +595,38 @@ def UpdateReporter (request):
         return render(request, 'Reporter/UpdateProfile.html',context)
     return render(request, 'Reporter/UpdateProfile.html',context)
 
+def UpdateslegalProfile (request):
+    user = User.objects.get(id=request.session['user_id'])
+    name = request.session["name"]
+    role= request.session["user_type"]
+    context = {
+            'name': name,
+            'role': role,
+            'user': user,
+        }
+
+    if request.method == "POST":
+
+        fullname = request.POST.get('fullname')
+        address = request.POST.get('address')
+        phone_number = request.POST.get('phone_number')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        user.fullname = fullname
+        user.address = address
+        user.phone_number = phone_number
+        user.email = email
+        user.password=password      
+
+
+        user.save()       
+        messages.success(request, "Profile updated successfully!")
+       
+        return render(request, 'Reporter/UpdateProfile.html',context)
+    return render(request, 'Reporter/UpdateProfile.html',context)
+
+
 def UpdateInvestigetor (request):
     user = User.objects.get(id=request.session['user_id'])
     name = request.session["name"]

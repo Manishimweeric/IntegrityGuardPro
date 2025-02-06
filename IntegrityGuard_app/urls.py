@@ -39,6 +39,8 @@ urlpatterns = [
     path('Legal_case/', views.Legal_Case_views, name="Legal_case"),
     path('Legal_solved/', views.Legal_Case_views_Solved, name="Legal_solved"),
 
+      path('UpdateslegalProfile/',views.UpdateslegalProfile, name="UpdateslegalProfile"),
+
      path('edit_case_Legal/<int:case_id>/', views.Legal_Assign_edit_case, name='Assigned_case_Legal_Advisor'),
      path('Ligal_assigned_case/<int:case_id>/assign/', views.Ligal_assigned_case, name='Ligal_assigned_case'),
      path('AddingEvidence/<int:case_id>/', views.Adding_Evidence_case, name='AddingEvidence'),
