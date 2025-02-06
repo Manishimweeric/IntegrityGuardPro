@@ -80,9 +80,9 @@ def Legal_Advisor_dashboard(request):
     role= request.session["user_type"]
 
     # Fetch user-specific data
-    total_cases = Case.objects.filter(assigned_to=user).count()
-    cases_under_investigation = Case.objects.filter(assigned_to=user, status="under_investigation").count()
-    resolved_cases = Case.objects.filter(assigned_to=user, status="resolved").count()
+    total_cases = Case.objects.filter(Legal_assigned_to=user).count()
+    cases_under_investigation = Case.objects.filter(Legal_assigned_to=user, status="under_Legal_Advisor").count()
+    resolved_cases = Case.objects.filter(Legal_assigned_to=user, status="resolved").count()
 
     context = {
         'total_cases': total_cases,
@@ -331,7 +331,6 @@ def edit_case(request, case_id):
             # Set the corresponding user's is_active to False
             if case.assigned_to:
                 user = investigator
-                user.is_active = False
                 user.save()
 
             case.save()
@@ -362,10 +361,10 @@ def cases_list(request):
         cases = Case.objects.filter(status="reported")
     
     # Pass the list of investigators if needed
-    investigators = User.objects.filter(user_type='investigator',is_active=True)
+    investigators = User.objects.filter(user_type='investigator')
 
     context = {
-        'name': name,
+        'name': name,   
         'role': role,
         'cases': cases,
         'investigators': investigators,
@@ -376,7 +375,7 @@ def view_all_Cases (request):
     name = request.session["name"]
     role= request.session["user_type"]
     cases = Case.objects.filter(status="reported")
-    investigators = User.objects.filter(user_type='investigator',is_active=True)
+    investigators = User.objects.filter(user_type='investigator')
     context = {
         'name': name,
         'role': role,
@@ -451,7 +450,7 @@ def Investigetor_Case_views (request):
     name = request.session["name"]
     role= request.session["user_type"]
     user = User.objects.get(id=request.session['user_id'])
-    investigators = User.objects.filter(user_type='legalAdvisor',is_active=True)
+    investigators = User.objects.filter(user_type='legalAdvisor')
     status = request.GET.get('status')
 
     if status:
@@ -476,8 +475,6 @@ def assigned_case(request, case_id):
         case.reported = description
         case.status = 'resolved'
         case.save()
-        user.is_active = True
-        user.save()
         messages.success(request, "Feedback sent successfully!")
         return redirect("investigetor_case")  
 
