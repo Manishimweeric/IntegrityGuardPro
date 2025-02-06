@@ -183,7 +183,7 @@ def login_view(request):
                 else:
                     return redirect('login')  
             else:
-                messages.error(request, "Invalid password.")
+                messages.error(request, "Incorrect Email or password.")
                 return redirect('login')  
         except User.DoesNotExist:
             messages.error(request, "No account found with this email.")
