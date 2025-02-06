@@ -183,6 +183,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{% url 'Legal_advisor_List' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'Legal_advisor_List' %}active{% endif %}">
+                        <i class="bi bi-people me-2"></i> Legal Advisor
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{% url 'collabration' %}"
                         class="nav-link {% if request.resolver_match.url_name == 'collabration' %}active{% endif %}">
                         <i class="bi bi-people me-2"></i> Collaboration

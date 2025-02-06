@@ -29,8 +29,19 @@ urlpatterns = [
     path('userprofilereporter/',views.UpdateReporter, name="Updatesreporter"),
     path('userprofileinvestigetor/',views.UpdateInvestigetor, name="Updatesinvestigetor"),
     path('userprofileadmin/',views.Updateadimn, name="Updatesadmin"),
-     path('contact/',views.contact_view, name='contact'),
-     path('contact_display/',views.contactus_display, name='contact_dicplayed'),
+    path('contact/',views.contact_view, name='contact'),
+    path('contact_display/',views.contactus_display, name='contact_dicplayed'),
+
+
+    path ('Legal_advisor/',views.LegalAdvisor, name="Legal_advisor"),
+    path ('Legal_advisor_List/',views.LegalAdvisorList, name="Legal_advisor_List"),
+    path('Legal_Dashboard/', views.Legal_Advisor_dashboard, name='Legal_Dashboard'), 
+    path('Legal_case/', views.Legal_Case_views, name="Legal_case"),
+    path('Legal_solved/', views.Legal_Case_views_Solved, name="Legal_solved"),
+
+     path('edit_case_Legal/<int:case_id>/', views.Legal_Assign_edit_case, name='Assigned_case_Legal_Advisor'),
+     path('Ligal_assigned_case/<int:case_id>/assign/', views.Ligal_assigned_case, name='Ligal_assigned_case'),
+     path('AddingEvidence/<int:case_id>/', views.Adding_Evidence_case, name='AddingEvidence'),
      
 ]   
 

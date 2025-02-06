@@ -40,9 +40,11 @@ class Case(models.Model):
     description = models.TextField()
     reported_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reported_cases')
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_cases')
+    Legal_assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='Legal_cases')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='reported')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    reported = models.TextField(max_length=255, blank=True, null=True)
 
     def _str_(self):
         return f"Case {self.title} (Status: {self.status})"
@@ -53,6 +55,16 @@ class Feedback(models.Model):
     reported_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feedbacks')
     feedback_message = models.TextField(max_length=255, blank=True, null=True)
     feedback_file = models.FileField(upload_to='feedback_files/',blank=True, null=True)
+    provided_at = models.DateTimeField(auto_now_add=True)    
+    def __str__(self):
+        return f"Feedback for Case {self.case.id} by {self.uploaded_by.username}"
+    
+
+class Evidence(models.Model):
+    case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='evidence')
+    provided_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='provided_evidence')
+    reported_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='evidence')
+    feedback_file = models.FileField(upload_to='Evidence_files/',blank=True, null=True)
     provided_at = models.DateTimeField(auto_now_add=True)    
     def __str__(self):
         return f"Feedback for Case {self.case.id} by {self.uploaded_by.username}"

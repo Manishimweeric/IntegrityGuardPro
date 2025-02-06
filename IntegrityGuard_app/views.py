@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect
 from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
-from .models import Case, Feedback 
+from .models import Case, Feedback,Evidence
 from django.conf import settings
 
 def index(request):
@@ -49,6 +49,7 @@ def investigator_dashboard(request):
     user = User.objects.get(id=request.session['user_id'])
     name = request.session["name"]
     role= request.session["user_type"]
+    users = User.objects.filter(user_type="legalAdvisor")
 
     if not user_id :
         messages.error(request, "You need to log in as a reporter to access this page.")
@@ -64,9 +65,33 @@ def investigator_dashboard(request):
         'cases_under_investigation': cases_under_investigation,
         'resolved_cases': resolved_cases,
         'name': name,
+        'users': users,
         'role': role,
     }
     return render(request, 'investigator/investigator_dashboard.html',context)
+
+def Legal_Advisor_dashboard(request):
+     # Check if the user is logged   in
+    user_id = request.session.get('user_id')
+    user_type = request.session.get('user_type')
+    user = User.objects.get(id=request.session['user_id'])
+
+    name = request.session["name"]
+    role= request.session["user_type"]
+
+    # Fetch user-specific data
+    total_cases = Case.objects.filter(assigned_to=user).count()
+    cases_under_investigation = Case.objects.filter(assigned_to=user, status="under_investigation").count()
+    resolved_cases = Case.objects.filter(assigned_to=user, status="resolved").count()
+
+    context = {
+        'total_cases': total_cases,
+        'cases_under_investigation': cases_under_investigation,
+        'resolved_cases': resolved_cases,
+        'name': name,
+        'role': role,
+    }
+    return render(request, 'Legal/Legal_Dashboard.html',context)
 
 def reporter_dashboard(request):
     # Check if the user is logged   in
@@ -144,8 +169,7 @@ def login_view(request):
                 request.session['user_id'] = user.id
                 request.session['name'] = user.fullname
                 request.session['user_type'] = user.user_type
-                request.session['email'] = user.email
-            
+                request.session['email'] = user.email           
 
                 # Redirect based on the user's role
                 if user.user_type == 'admin':
@@ -153,9 +177,11 @@ def login_view(request):
                 elif user.user_type == 'investigator':
                     return redirect('investigator_dashboard')  
                 elif user.user_type == 'reporter':
-                    return redirect('reporter_dashboard')  
+                    return redirect('reporter_dashboard') 
+                elif user.user_type == 'legalAdvisor':
+                    return redirect('Legal_Dashboard')  
                 else:
-                    return redirect('login ')  
+                    return redirect('login')  
             else:
                 messages.error(request, "Invalid password.")
                 return redirect('login')  
@@ -224,7 +250,7 @@ def logout_view(request):
     # Clear the session
     request.session.flush()
     messages.success(request, "You have been logged out successfully.")
-    return redirect('login')  # Replace 'login' with your login page URL name
+    return redirect('login')  
 
 def investigators_view (request):
 
@@ -333,7 +359,7 @@ def cases_list(request):
     if status:
         cases = Case.objects.filter(status=status)
     else:
-        cases = Case.objects.all()
+        cases = Case.objects.filter(status="reported")
     
     # Pass the list of investigators if needed
     investigators = User.objects.filter(user_type='investigator',is_active=True)
@@ -349,7 +375,7 @@ def cases_list(request):
 def view_all_Cases (request):
     name = request.session["name"]
     role= request.session["user_type"]
-    cases = Case.objects.all()
+    cases = Case.objects.filter(status="reported")
     investigators = User.objects.filter(user_type='investigator',is_active=True)
     context = {
         'name': name,
@@ -425,13 +451,13 @@ def Investigetor_Case_views (request):
     name = request.session["name"]
     role= request.session["user_type"]
     user = User.objects.get(id=request.session['user_id'])
-    investigators = User.objects.filter(user_type='investigator',is_active=True)
-    status = request.GET.get('status')  
+    investigators = User.objects.filter(user_type='legalAdvisor',is_active=True)
+    status = request.GET.get('status')
 
     if status:
         cases = Case.objects.filter(assigned_to=user,status=status)
     else:
-        cases = Case.objects.filter(assigned_to=user)
+        cases = Case.objects.filter(assigned_to=user,status="under_investigation")
 
     context = {
         'name': name,
@@ -442,8 +468,23 @@ def Investigetor_Case_views (request):
     return render(request, 'investigator/CaseAssigned.html', context)
 
 
-
 def assigned_case(request, case_id):
+    if request.method == "POST":
+        user = User.objects.get(id=request.session['user_id'])
+        case = get_object_or_404(Case, id=case_id)
+        description = request.POST.get("description")
+        case.reported = description
+        case.status = 'resolved'
+        case.save()
+        user.is_active = True
+        user.save()
+        messages.success(request, "Feedback sent successfully!")
+        return redirect("investigetor_case")  
+
+    return redirect("investigetor_case") 
+
+
+def Ligal_assigned_case(request, case_id):
     if request.method == "POST":
         user = User.objects.get(id=request.session['user_id'])
         case = get_object_or_404(Case, id=case_id)
@@ -469,9 +510,9 @@ def assigned_case(request, case_id):
 
         feedback.save()
         messages.success(request, "Feedback sent successfully!")
-        return redirect("investigetor_case")  
+        return redirect("Legal_case")  
 
-    return redirect("investigetor_case")  
+    return redirect("Legal_case")  
 
 
 def Investigetor_Case_views_Solved (request):
@@ -488,6 +529,7 @@ def Investigetor_Case_views_Solved (request):
         'name': name,
         'role': role,
         'cases_with_feedback': cases_with_feedback,
+        'cases': cases,
         'investigators': investigators,
     }
     return render(request, 'investigator/SolvedCase.html', context)
@@ -498,13 +540,10 @@ def admin_Case_views_Solved (request):
     role= request.session["user_type"]
     cases = Case.objects.filter(status="resolved")
     
-    # Fetch cases that have at least one associated feedback
-    cases_with_feedback = cases.filter(feedbacks__isnull=False)
-
     context = {
         'name': name,
         'role': role,
-        'cases_with_feedback': cases_with_feedback,
+        'cases': cases,
     }
     return render(request, 'admin/SolvedCase.html', context)
 
@@ -640,3 +679,155 @@ def contactus_display (request):
         'contacts': contactus,
     }
     return render(request, 'admin/contacts.html', context)
+
+
+def LegalAdvisor (request):
+    name = request.session["name"]
+    role= request.session["user_type"]
+
+    if request.method == "POST":
+        fullname = request.POST.get('fullname')
+        address = request.POST.get('address')
+        phone_number = request.POST.get('phone_number')
+        email = request.POST.get('email')
+        user_types="legalAdvisor"
+        password=123456789
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "This email is already registered Try Other Email.")
+            return redirect('Legal_advisor')
+        try:
+            EmailValidator()(email)
+        except ValidationError:
+            messages.error(request, "Invalid email format.")
+            return redirect('Legal_advisor')
+        user = User.objects.create(
+            fullname=fullname,
+            address=address,
+            phone_number=phone_number,
+            email=email,
+            password=password,  
+            user_type=user_types
+        )
+        user.save()
+        messages.success(request, "Thank you for creating a Legal Advisor Account was Successful")
+        return redirect('Legal_advisor_List')  
+
+    context = {
+        'name': name,
+        'role': role,
+    }
+    return render(request, 'investigator/LegalAdvisor.html', context)
+
+def LegalAdvisorList (request):
+    name = request.session["name"]
+    role= request.session["user_type"]
+    legal_advisors = User.objects.filter(user_type="legalAdvisor")
+    context = {
+        'name': name,
+        'role': role,
+        'legal_advisors': legal_advisors,
+    }
+    return render(request, 'investigator/LegalAdvisorList.html', context)
+
+
+def Legal_Case_views (request):
+    name = request.session["name"]
+    role= request.session["user_type"]
+    user = User.objects.get(id=request.session['user_id'])
+    investigators = User.objects.filter(user_type='legalAdvisor',is_active=True)
+    status = request.GET.get('status')  
+
+    if status:
+        cases = Case.objects.filter(Legal_assigned_to=user,status=status)
+    else:
+        cases = Case.objects.filter(Legal_assigned_to=user,status="under_Legal_Advisor")
+
+    cases_with_evidence = cases.filter(evidence__isnull=False)
+
+
+    context = {
+        'name': name,
+        'role': role,
+        'cases': cases,
+        'investigators': investigators,
+        'cases_with_evidence': cases_with_evidence
+    }
+    return render(request, 'Legal/CaseAssigned.html', context)
+
+def Legal_Case_views_Solved (request):
+    name = request.session["name"]
+    role= request.session["user_type"]
+    user = User.objects.get(id=request.session['user_id'])
+    investigators = User.objects.filter(user_type='investigator',is_active=True) 
+    cases = Case.objects.filter(Legal_assigned_to=user, status="resolved")
+    
+    # Fetch cases that have at least one associated feedback
+    cases_with_feedback = cases.filter(feedbacks__isnull=False)
+
+    context = {
+        'name': name,
+        'role': role,
+        'cases_with_feedback': cases_with_feedback,
+        'cases': cases,
+        'investigators': investigators,
+    }
+    return render(request, 'Legal/SolvedCase.html', context)
+
+
+def Legal_Assign_edit_case(request, case_id):
+    case = get_object_or_404(Case, id=case_id)
+    investigators = User.objects.all()
+
+    if request.method == 'POST':
+        legal_id = request.POST.get('legal_id')
+        if legal_id:
+            LegalAdvisor = User.objects.get(id=legal_id)
+            case.Legal_assigned_to = LegalAdvisor
+            case.status="under_Legal_Advisor"
+            if case.assigned_to:
+                user = LegalAdvisor
+                user.is_active = False
+                user.save()
+
+            case.save()
+            messages.success(request, 'Legal Advisor assigned successfully .')
+            return redirect('investigetor_case')
+        else:
+            messages.error(request, 'Please select an Legal Advisor.')
+
+    name = request.session["name"]
+    role= request.session["user_type"]
+    cases = Case.objects.all()
+    investigators = User.objects.filter(user_type='investigator',is_active=True)
+    context = {
+        'name': name,
+        'role': role,
+        'cases': cases,
+        'investigators': investigators,
+    }
+    return render(request, 'investigator/CaseAssigned.html', context)
+
+
+def Adding_Evidence_case(request, case_id):
+    if request.method == "POST":
+        user = User.objects.get(id=request.session['user_id'])
+        case = get_object_or_404(Case, id=case_id)
+        user_reported_by=User.objects.get(id=case.reported_by.id)
+        evidence_file = request.FILES.get("evidence_file")
+        evidence = Evidence.objects.create(
+            case=case,
+            provided_by=user,
+            reported_by=user_reported_by
+        )
+
+        if evidence_file:
+            fs = FileSystemStorage(location=settings.MEDIA_ROOT)
+            filename = fs.save(evidence_file.name, evidence_file)
+            evidence.feedback_file = filename
+
+        evidence.save()
+        messages.success(request, "Thank you for adding Evidence on this  Case!")
+        return redirect("investigetor_case")  
+
+    return redirect("investigetor_case")

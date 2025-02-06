@@ -238,6 +238,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{% url 'Legal_advisor_List' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'Legal_advisor_List' %}active{% endif %}">
+                        <i class="bi bi-people me-2"></i> Legal Advisor
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{% url 'collabration' %}"
                         class="nav-link {% if request.resolver_match.url_name == 'collabration' %}active{% endif %}">
                         <i class="bi bi-people me-2"></i> Collaboration
@@ -287,7 +293,7 @@
                         <!-- Filter Buttons -->
                         <div class="filter-buttons mb-4" style="margin-top: -43px;">
                             <a href="{% url 'investigetor_case' %}" class="btn btn-outline-primary {% if not request.GET.status %}active{% endif %}" style="margin-left: 20%;">
-                                All
+                            New Cases
                             </a>
                             <a href="{% url 'investigetor_case' %}?status=resolved" class="btn btn-outline-primary {% if request.GET.status == 'resolved' %}active{% endif %}"  style="margin-left: 5%;">
                                 Resolved
@@ -358,47 +364,91 @@
                                         <p><strong><i class="bi bi-calendar3 me-2"></i>Created on:</strong>
                                             {{ case.created_at|date:"M d, Y" }}</p>
                                     </div>
-                                    <div class="modal-footer"
-                                        style="background-color: #f8f9fa; border-radius: 0 0 15px 15px;">
-                                        
-
-                                                <button type="button" class="btn btn-outline-primary  {% if case.status != 'under_investigation' %}disabled{% endif %}" 
+                                    <div class="modal-footer mb-5" style="background-color: #f8f9fa; border-radius: 0 0 15px 15px;">                                     
+                                        <!-- Close Case Button -->
+                                        <button type="button" class="btn btn-outline-primary {% if case.status != 'under_investigation' %}disabled{% endif %}" 
                                                 data-bs-toggle="collapse" data-bs-target="#editForm{{ case.id }}" 
-                                                {% if case.status != 'under_investigation' %}title="You can only assign investigators to reported cases" disabled{% endif %}>
-                                                <i class="bi bi-person-lines-fill me-2"></i>FeedBack
-                                            </button>
-                                            <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Close</button>
+                                                {% if case.status != 'under_investigation' %}title="You can only close the case to Under Investigator cases" disabled{% endif %}>
+                                            <i class="bi bi-person-lines-fill me-2"></i> Close Case
+                                        </button>
                                     
+                                        <!-- Assign Legal Advisor Button -->
+                                        <button type="button" class="btn btn-outline-success {% if case.status != 'under_investigation' %}disabled{% endif %}" 
+                                                data-bs-toggle="collapse" data-bs-target="#assignedForm{{ case.id }}" 
+                                                {% if case.status != 'under_investigation' %}title="You can only assign Legal Advisor to Under Investigator cases" disabled{% endif %}>
+                                            <i class="bi bi-person-lines-fill me-2"></i> Assign Legal Advisor
+                                        </button>
+                                    
+                                        <!-- Add Evidence Button -->
+                                        <button type="button" class="btn btn-outline-warning" data-bs-toggle="collapse" data-bs-target="#addevidenceForm{{ case.id }}">
+                                            <i class="bi bi-file-earmark-arrow-up me-2"></i> Add New Evidence
+                                        </button>
+                                    
+                                        <!-- Close Modal Button -->
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                     </div>
-                                   <!-- feedback  Form -->
-                                        <div class="collapse" id="editForm{{ case.id }}">
-
-                                            <h4 class="text-primary ps-3" style="padding-left: 2%;">Case Response</h4>
+                                    
+                                    <!-- Assigned Form -->
+                                    <div class="collapse " id="assignedForm{{ case.id }}" >
+                                        <form method="post" action="{% url 'Assigned_case_Legal_Advisor' case.id %}" style="padding: 20px;">
+                                            {% csrf_token %}
+                                            <div class="mb-3">
+                                                <label for="title{{ case.id }}" class="form-label text-black">Select Available Investigator</label>
+                                                <select class="form-select" name="legal_id" id="investigator{{ case.id }}" required>
+                                                    <option value="">Select Investigator</option>
+                                                    {% for investigator in investigators %}
+                                                        <option value="{{ investigator.id }}" class="mt-2 mb-2">{{ investigator.fullname }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-success border">
+                                                    <i class="bi bi-save me-2"></i> Assign Changes
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Feedback Form -->
+                                    <div class="collapse" id="editForm{{ case.id }}">
+                                        <h4 class="text-primary ps-3" style="padding-left: 2%;">Case Response</h4>
                                         <form method="post" action="{% url 'Assigned_cases_views' case.id %}" enctype="multipart/form-data" style="padding: 20px;">
                                             {% csrf_token %}
                                             <!-- Evidence Description -->
                                             <div class="mb-3">
                                                 <label for="description{{ case.id }}" class="form-label text-black">Feedback Messages</label>
-                                                <textarea name="description" id="description{{ case.id }}" class="form-control" rows="4"
-                                                    placeholder="Enter evidence description "></textarea>
+                                                <textarea name="description" id="description{{ case.id }}" class="form-control" rows="4" placeholder="Enter feedback message"></textarea>
                                             </div>
-
-                                            <!-- Upload Evidence File -->
-                                            <div class="mb-3">
-                                                <label for="evidence_file{{ case.id }}" class="form-label text-black">Upload Feedback Document (Option) </label>
-                                                <input type="file" name="evidence_file" id="evidence_file{{ case.id }}" class="form-control">
-                                            </div>
-
+                                    
                                             <!-- Submit Button -->
                                             <div class="text-end">
                                                 <button type="submit" class="btn btn-success border">
-                                                    <i class="bi bi-save me-2"></i>Send Feedback 
+                                                    <i class="bi bi-save me-2"></i> Send Feedback
+                                                </button>
+                                            </div>                                           
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Adding Evidence Form -->
+                                    <div class="collapse" id="addevidenceForm{{ case.id }}">
+                                        <h4 class="text-primary ps-3" style="padding-left: 2%;">Add New Evidence</h4>
+                                        <form method="post" action="{% url 'AddingEvidence' case.id %}" enctype="multipart/form-data" style="padding: 20px;">
+                                            {% csrf_token %}
+                                            <!-- Upload Evidence File -->
+                                            <div class="mb-3">
+                                                <label for="evidence_file{{ case.id }}" class="form-label text-black">Upload Evidence Document</label>
+                                                <input type="file" name="evidence_file" id="evidence_file{{ case.id }}" class="form-control">
+                                            </div>
+                                    
+                                            <!-- Submit Button -->
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-success border">
+                                                    <i class="bi bi-upload me-2"></i> Upload Evidence
                                                 </button>
                                             </div>
-                                            </div>
                                         </form>
-                                        </div>
+                                    </div>
+                                    
 
                                 </div>
                             </div>
@@ -408,7 +458,7 @@
                         {% endfor %}
                     </div>
                     {% else %}
-                    <p  style="color: rgb(165, 31, 31); margin-top: 100px; margin-left: 20%;">No cases found for your account.</p>
+                    <p  style="color: rgb(165, 31, 31); margin-top: 100px; margin-left: 20%;">No cases found </p>
                     {% endif %}
                 </div>
             </div>

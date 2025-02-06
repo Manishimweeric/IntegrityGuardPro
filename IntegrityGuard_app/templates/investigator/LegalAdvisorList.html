@@ -1,0 +1,352 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investigator List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom, #4facfe, #00f2fe);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            background: linear-gradient(to bottom, #007bff, #00f2fe);
+            color: #fff;
+            height: 100vh;
+            width: 270px;
+            position: fixed;
+            padding: 30px 20px;
+            box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h4 {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .sidebar h5 {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .sidebar .nav-link {
+            color: black;
+            font-size: 1rem;
+            padding: 12px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.3rem;
+            margin-right: 10px;
+        }
+
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:hover {
+            background-color: rgb(131, 96, 32);
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .sidebar .nav-item:not(:last-child) {
+            margin-bottom: 15px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+            flex-grow: 1;
+            background-color: #f4f6f9;
+        }
+
+        .dashboard-container {
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 1200px;
+            width: 100%;
+            height: 84vh;
+        }
+
+        .dashboard-container h4 {
+            color: #007bff;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f9f9f9;
+        }
+
+        .table-bordered th,
+        .table-bordered td {
+            border: 1px solid #dee2e6;
+            padding: 12px 15px;
+        }
+
+        .table-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .table td {
+            text-align: center;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #333;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            background: #007bff;
+            color: #fff;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-custom {
+            background: linear-gradient(to bottom, #007bff, #00f2fe);
+            padding: 10px 30px;
+            border-radius: 5px;
+            color: white;
+            position: fixed;
+            width: 85%;
+            z-index: 1000;
+            top: 0;
+        }
+
+        .navbar-custom img {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="d-flex">
+        <div class="sidebar">
+            <h4>IntegrityGuard Pro</h4>
+            <h5>{{ name }}</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'investigator_dashboard' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'investigator_dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'Legal_advisor_List' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'Legal_advisor_List' %}active{% endif %}">
+                        <i class="bi bi-people me-2"></i> Legal Advisor
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'collabration' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'collabration' %}active{% endif %}">
+                        <i class="bi bi-people me-2"></i> Collaboration
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'messages' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'messages' %}active{% endif %}">
+                        <i class="bi bi-envelope-fill me-2"></i> Messages
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'investigetor_case' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'investigetor_case' %}active{% endif %}">
+                        <i class="bi bi-briefcase-fill me-2"></i> Assigned Cases
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'investigetor_solved' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'investigetor_solved' %}active{% endif %}">
+                        <i class="bi bi-check-circle-fill me-2"></i> Solved Cases
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+        <div class="main-content">
+            <nav class="navbar navbar-expand-lg navbar-custom">
+                <span>Welcome &nbsp;&nbsp; {{ name }}</span>
+                <div class="dropdown ms-auto">
+                    <button class="btn text-white dropdown-toggle" type="button" id="navbarDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <span>{{role}}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'Updatesinvestigetor' %}">Profile </a></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="dashboard-container">
+                <div class="d-flex justify-content-between mb-5">
+                    <div>
+                        <h4>Legal Advisor Informations</h2>
+                    </div> <!-- Empty div for flexibility (could be used for other elements if needed) -->
+                    <a href="{% url 'Legal_advisor' %}" class="btn btn-primary">
+                        <i class="bi bi-person-plus me-2"></i> Add Legal Advisor
+                    </a>
+                </div>
+
+
+                {% if legal_advisors %}
+                <table class="table table-striped text-center table-bordered">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>#</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Is Active</th>
+                            <th>Action</th> <!-- Column for the button -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for investigator in legal_advisors %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ investigator.fullname }}</td>
+                            <td>{{ investigator.email }}</td>
+                            <td>
+                                {% if investigator.is_active %}
+                                Available
+                                {% else %}
+                                Assigned
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- Button to trigger the modal -->
+                                <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                    data-bs-target="#investigatorModal{{ investigator.id }}">
+                                    View All Details
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No Legal Advisor found.</p>
+                {% endif %}
+                <!-- Modal Structure -->
+
+                {% for investigator in legal_advisors %}
+                <div class="modal fade" id="investigatorModal{{ investigator.id }}" tabindex="-1"
+                    aria-labelledby="investigatorModalLabel{{ investigator.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content border-0 rounded-3 shadow">
+                            <!-- Modal Header -->
+                            <div class="modal-header bg-gradient-primary text-white">
+                                <h5 class="modal-title fw-semibold" id="investigatorModalLabel{{ investigator.id }}">
+                                    Investigator Details
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <!-- Modal Body -->
+                            <div class="modal-body px-4 py-5">
+                                <div class="row align-items-center">
+                                    <!-- Profile Section -->
+                                    <div class="col-md-4 text-center mb-3">
+                                        <!-- User Icon or Profile Image -->
+                                        {% if investigator.photo %}
+                                            <!-- Display photo if available -->
+                                            <img src="{{ investigator.photo.url }}" alt="Investigator Photo"
+                                                class="img-fluid rounded-circle border shadow-sm">
+                                        {% else %}
+                                            <!-- Display user icon if photo is not available -->
+                                            <i class="bi bi-person-circle text-primary display-1"></i>
+                                        {% endif %}
+                                        <h6 class="mt-3 text-primary">{{ investigator.fullname }}</h6>
+                                        <p class="text-muted small mb-0">Joined on {{ investigator.date_joined }}</p>
+                                    </div>
+                                    
+                                    <!-- Details Section -->
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <h6 class="text-uppercase text-secondary fs-6 fw-bold">Details</h6>
+                                        </div>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2">
+                                                <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                                                <strong>Address:</strong> {{ investigator.address }}
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-phone-fill text-primary me-2"></i>
+                                                <strong>Phone Number:</strong> {{ investigator.phone_number }}
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-envelope-fill text-primary me-2"></i>
+                                                <strong>Email:</strong> {{ investigator.email }}
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-envelope-fill text-primary me-2"></i>
+                                                <strong>Role:</strong> {{ investigator.user_type }}
+                                            </li>
+                                            <li>
+                                                <i class="bi bi-circle-fill text-primary me-2"></i>
+                                                <strong>Status:</strong>
+                                                {% if investigator.is_active %}
+                                                    <span class="badge bg-success">Available</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Assigned</span>
+                                                {% endif %}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Modal Footer -->
+                            <div class="modal-footer d-flex justify-content-end">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    Close
+                                </button>
+                                <a href="{% url 'Updatesinvestigetor' %}"  class="btn btn-primary">
+                                    Edit Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

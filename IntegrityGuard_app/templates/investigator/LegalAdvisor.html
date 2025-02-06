@@ -240,6 +240,8 @@
                 
             </ul>
         </div>
+
+
         <!-- Main Content -->
         <div class="main-content">
             <!-- Navbar -->
@@ -260,75 +262,114 @@
                 </div>
             </nav>
 
-            <!-- Dashboard -->
-            <div class="dashboard-container">
-                <!-- Case Form -->
-                <div class="case-container text-left">
-                    <div class="text-center ">
-                        <!-- User Icon -->
-                        <i class="bi bi-person-circle text-primary fs-1"></i>
-                        <!-- Heading -->
-                        <h4 class="text-center text-primary fs-3 mt-2">Edit Profile</h4>
-                    </div>
-                    
-                    {% if messages %}
-                    <div class="alert alert-info text-left alert-dismissible fade show mt-4" role="alert">
-                        <ul class="list-unstyled">
-                            {% for message in messages %}
-                            <li>{{ message }}</li>
-                            {% endfor %}
-                        </ul>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endif %}
+            <div class="d-flex gap-3">
+                <!-- Dashboard -->
+                <div class="dashboard-container flex-grow-1 p-4" style="border: 1px solid;">
                     <!-- Case Form -->
-                    <form method="post" class="mt-4 text-black" action="{% url 'Updatesinvestigetor' %}">
-                        {% csrf_token %}
-                        <!-- Full Name -->
-                        <div class="mb-3">
-                            <label for="fullname" class="form-label">Full Name</label>
-                            <input type="text" id="fullname" name="fullname" class="form-control p-3"
-                                placeholder="Full Name" value="{{ user.fullname }}" required>
+                    <div class="case-container text-left">
+                        <div class="d-flex justify-content-between mb-5">
+                            <div>
+                                <h2>Register a New Legal Advisor</h2>
+                            </div>
+                            <a href="{% url 'Legal_advisor_List' %}" class="btn btn-primary d-flex align-items-center px-4 py-2 rounded-pill shadow-sm" style="font-size: 1rem;">
+                                <i class="bi bi-chevron-left me-2 fs-5"></i> Back to List
+                            </a>
+                            
                         </div>
-
-                        <!-- Address -->
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Address</label>
-                            <input type="text" id="address" name="address" class="form-control p-3"
-                                placeholder="Address" value="{{ user.address }}" required>
+            
+                        {% if messages %}
+                        <div class="alert alert-info text-left alert-dismissible fade show mt-4" role="alert">
+                            <ul class="list-unstyled">
+                                {% for message in messages %}
+                                <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
-
-                        <!-- Phone Number -->
-                        <div class="mb-3">
-                            <label for="phone_number" class="form-label">Phone Number</label>
-                            <input type="text" id="phone_number" name="phone_number" class="form-control p-3"
-                                placeholder="Phone Number" value="{{ user.phone_number }}" required>
-                        </div>
-
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" id="email" name="email" class="form-control p-3" placeholder="Email"
-                                value="{{ user.email }}" required>
-                        </div>
-
-                        <!-- Password -->
-                        <div class="mb-3 position-relative">
-                            <label for="password" class="form-label ">Password</label>
-                            <input type="password" id="password" name="password" class="form-control p-3"
-                                placeholder="Password" value="{{ user.password }}" required>
-                            <button type="button" id="togglePassword"
-                                class="btn btn-outline-secondary position-absolute top-30 end-0 translate-middle-y"
-                                style="margin-top: 15px; border: 0px solid; ">
-                                <i class="bi bi-eye-slash"></i>
-                            </button>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button type="submit" class="btn btn-primary w-100 mt-4">Save Changes </button>
-                    </form>
+                        {% endif %}
+            
+                        <form method="post" class="mt-4" action="{% url 'Legal_advisor' %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <input type="text" name="fullname" class="form-control p-3" placeholder="Full Name" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="text" name="address" class="form-control p-3" placeholder="Address" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="text" name="phone_number" class="form-control p-3" placeholder="Phone Number" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="text" class="form-control p-3" placeholder="Role => legalAdvisor" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <input type="email" name="email" class="form-control p-3" placeholder="Email" required>
+                            </div>  
+                            <button type="submit" class="btn btn-primary w-100">Submit</button>
+                        </form>
+                    </div>
                 </div>
+            
+                <!-- Extra div -->
+                <div class="p-4 mt-5 border rounded shadow-lg bg-white position-relative" style="color: #333; min-width: 350px;">
+                    <!-- Decorative Ribbon -->
+                    <div class="position-absolute top-0 start-0 bg-primary text-white px-3 py-1 rounded-bottom">
+                        <i class="bi bi-info-circle"></i> Important Information
+                    </div>
+                
+                    <!-- Content Section -->
+                    <div class="mt-4">
+                        <p class="fs-5 fw-semibold text-dark">Before creating an account, please take note of the following:</p>
+                        
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item border-0">
+                                ✅ The default role assigned to the account is <strong>Legal Advisor</strong>.
+                            </li>
+                            <li class="list-group-item border-0">
+                                🔑 The default password is <strong>123456789</strong>.
+                            </li>
+                            <li class="list-group-item border-0">
+                                🔄 Users can update their password after logging in.
+                            </li>
+                            <li class="list-group-item border-0">
+                                📧 A valid <strong>email address</strong> is required for account creation.
+                            </li>
+                            <li class="list-group-item border-0">
+                                📱 Ensure that the <strong>phone number</strong> provided is correct.
+                            </li>
+                            <li class="list-group-item border-0">
+                                ⚠️ It is <strong>highly recommended</strong> to change the default password immediately.
+                            </li>
+                        </ul>
+                
+                        <!-- Additional Security Note -->
+                        <div class="alert alert-light border mt-3 position-relative" role="alert">
+                            <i class="bi bi-lock-fill text-secondary"></i> 
+                            If you experience any issues with account creation, please contact 
+                            <a href="#" class="text-decoration-none fw-bold" id="support-link">support</a>.
+                        
+                            <!-- Hidden Phone Number -->
+                            <div id="support-phone" class="mt-2 text-primary fw-semibold" style="display: none;">
+                                <i class="bi bi-telephone-fill"></i> Call Rwanda: +25 078 664 6765 
+                            </div>
+                        </div>
+                        
+                        <!-- JavaScript to Toggle Visibility -->
+                        <script>
+                            document.getElementById("support-link").addEventListener("click", function(event) {
+                                event.preventDefault(); // Prevents the link from redirecting
+                                var phoneDiv = document.getElementById("support-phone");
+                                phoneDiv.style.display = phoneDiv.style.display === "none" ? "block" : "none";
+                            });
+                        </script>
+                        
+                    </div>
+                </div>
+                
+                
+                
             </div>
+            
         </div>
     </div>
 

@@ -214,7 +214,9 @@
                 </div>
             </nav>
 
-            <div class="dashboard-container">
+        <div class="d-flex gap-3">
+
+            <div class="dashboard-container flex-grow-1 p-4" style="width: 350px;">
                  <!-- Case Form -->
                  <div class="case-container text-left">
                     <div class="d-flex justify-content-between mb-5">
@@ -237,7 +239,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     {% endif %}
-                    <form method="post" class="mt-4 " action="{% url 'investigator_create' %}">
+                    <form method="post" class="mt-4  " action="{% url 'investigator_create' %}">
                         {% csrf_token %}
                             <div class="mb-3">
                                 <input type="text" name="fullname" class="form-control p-3" placeholder="Full Name" required>
@@ -255,6 +257,66 @@
                     </form>
                 </div>
             </div>
+
+             <!-- Extra div -->
+             <div class="p-4 mt-5 border rounded shadow-lg bg-white position-relative" style="color: #333; min-width: 450px;">
+                <!-- Decorative Ribbon -->
+                <div class="position-absolute top-0 start-0 bg-primary text-white px-3 py-1 rounded-bottom">
+                    <i class="bi bi-info-circle"></i> Important Information
+                </div>
+            
+                <!-- Content Section -->
+                <div class="mt-4">
+                    <p class="fs-5 fw-semibold text-dark">Before creating an account, please take note of the following:</p>
+                    
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item border-0">
+                            ✅ The default role assigned to the account is <strong>investigator</strong>.
+                        </li>
+                        <li class="list-group-item border-0">
+                            🔑 The default password is <strong>123456789</strong>.
+                        </li>
+                        <li class="list-group-item border-0">
+                            🔄 Users can update their password after logging in.
+                        </li>
+                        <li class="list-group-item border-0">
+                            📧 A valid <strong>email address</strong> is required for account creation.
+                        </li>
+                        <li class="list-group-item border-0">
+                            📱 Ensure that the <strong>phone number</strong> provided is correct.
+                        </li>
+                        <li class="list-group-item border-0">
+                            ⚠️ It is <strong>highly recommended</strong> to change the default password immediately.
+                        </li>
+                    </ul>
+            
+                    <!-- Additional Security Note -->
+                    <div class="alert alert-light border mt-3 position-relative" role="alert">
+                        <i class="bi bi-lock-fill text-secondary"></i> 
+                        If you experience any issues with account creation, please contact 
+                        <a href="#" class="text-decoration-none fw-bold" id="support-link">support</a>.
+                    
+                        <!-- Hidden Phone Number -->
+                        <div id="support-phone" class="mt-2 text-primary fw-semibold" style="display: none;">
+                            <i class="bi bi-telephone-fill"></i> Call Rwanda: +25 078 664 6765 
+                        </div>
+                    </div>
+                    
+                    <!-- JavaScript to Toggle Visibility -->
+                    <script>
+                        document.getElementById("support-link").addEventListener("click", function(event) {
+                            event.preventDefault(); // Prevents the link from redirecting
+                            var phoneDiv = document.getElementById("support-phone");
+                            phoneDiv.style.display = phoneDiv.style.display === "none" ? "block" : "none";
+                        });
+                    </script>
+                    
+                </div>
+            </div>     
+            
+            
+        </div>
+        
         </div>
     </div>
 

@@ -9,6 +9,17 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.24/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.30/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+
+
     <style>
         body {
             background: linear-gradient(to bottom, #4facfe, #00f2fe);
@@ -238,6 +249,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{% url 'Legal_advisor_List' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'Legal_advisor_List' %}active{% endif %}">
+                        <i class="bi bi-people me-2"></i> Legal Advisor
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{% url 'collabration' %}"
                         class="nav-link {% if request.resolver_match.url_name == 'collabration' %}active{% endif %}">
                         <i class="bi bi-people me-2"></i> Collaboration
@@ -280,9 +297,22 @@
                 </div>
             </nav>
 
+
+
+
+
             <div class="dashboard-container">
                 <div class="case-container text-left">
-                    <h2> Solved Cases </h2>
+                    <h2 class="mb-5"> Solved Cases </h2>
+
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-success px-4 py-2" onclick="downloadTableAsPDF()">
+                            <i class="bi bi-file-earmark-pdf"></i> Download as PDF
+                        </button>
+                        <button class="btn btn-primary px-4 py-2" onclick="downloadTableAsExcel()">
+                            <i class="bi bi-file-earmark-excel"></i> Download as Excel
+                        </button>
+                    </div>                 
 
 
                     {% if messages %}
@@ -295,61 +325,65 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     {% endif %}
-                                        {% if cases_with_feedback %}
+                    {% if cases %}
                     <div class="list-group mt-4">
-                        {% for case in cases_with_feedback %}
+                        {% for case in cases %}
                         <div class="case-list">
-                            <a href="#" class="case-item mb-3" data-bs-toggle="modal" data-bs-target="#caseModal{{ case.id }}">
+                            <a href="#" class="case-item mb-3 p-3 d-flex justify-content-between align-items-center border rounded shadow-sm"
+                               data-bs-toggle="modal" data-bs-target="#caseModal{{ case.id }}">
                                 <div class="case-content">
-                                    <h5 class="case-title">{{ forloop.counter }}. {{ case.title }}</h5>
-                                    <p class="case-description">{{ case.description|truncatewords:20 }}</p>
-                                    <small>
-                                        Assigned to: <span style="color: rgb(24, 88, 24);">
-                                            {% if case.assigned_to %}{{ case.assigned_to.fullname }}{% else %}New{% endif %}
-                                        </span>
-                                    </small>
+                                    <h5 class="case-title text-primary">{{ forloop.counter }}. {{ case.title }}</h5>
+                                    <p class="case-description text-muted">{{ case.description|truncatewords:20 }}</p>
+                                    <small> Assigned to: <span class="text-success">{% if case.assigned_to %}{{ case.assigned_to.fullname }}{% else %}New{% endif %}</span></small>
                                     <br>
-                                    <small>
-                                        Status : <span style="color: rgb(24, 88, 24);">{{ case.status }}</span>
-                                    </small>
+                                    <small>Status: <span class="badge bg-success">{{ case.status }}</span></small>
                                     <br>
-                                    <small class="case-date">Created on: {{ case.created_at|date:"M d, Y" }}</small>
+                                    <small class="case-date text-secondary">Created on: {{ case.created_at|date:"M d, Y" }}</small>
                                 </div>
-                                <div class="case-icon">
-                                    <i class="bi bi-info-circle"></i>
+                                <div class="case-icon text-primary">
+                                    <i class="bi bi-info-circle fs-4"></i>
                                 </div>
                             </a>
                         </div>
-
+                
                         <!-- Modal for each case -->
                         <div class="modal fade" id="caseModal{{ case.id }}" tabindex="-1" aria-labelledby="caseModalLabel{{ case.id }}" aria-hidden="true">
-                            <div class="modal-dialog">
+                            <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
-                                   
-                                    <div class="modal-body">
-                                        <!-- Display feedback for the case -->
+                                    <div class="modal-header bg-light">
+                                        <h5 class="modal-title" id="caseModalLabel{{ case.id }}">Case Details</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-dark">
+                                        <h6 class="text-dark"><strong>Case Title:</strong> {{ case.title }}</h6>
+                                        <p><strong>Description:</strong> {{ case.description }}</p>
+                                        <p><strong>Status:</strong> <span class="badge bg-success">{{ case.status }}</span></p>
+                                        <p><strong>Assigned To:</strong> <span class="text-success">{% if case.assigned_to %}{{ case.assigned_to.fullname }}{% else %}New{% endif %}</span></p>
+                                        <p><strong>Desicion :</strong> <span class="mb-2"><br>{{ case.reported }}</span></p>
+                                        <p><strong>Created on:</strong> {{ case.created_at|date:"M d, Y" }}</p>
+                
                                         {% if case.feedbacks.all %}
                                         <div class="case-feedback mt-3">
-                                            <h6>Feedback:</h6>
+                                            <h6 class="text-primary">Feedback:</h6>
                                             <ul class="list-group">
                                                 {% for feedback in case.feedbacks.all %}
                                                 <li class="list-group-item">
                                                     <strong>Feedback Message:</strong>
-                                                    <p >{{ feedback.feedback_message }}</p>
-
+                                                    <p class="text-dark">{{ feedback.feedback_message }}</p>
+                
                                                     <strong>Feedback Documents:</strong>
                                                     {% if feedback.feedback_file %}
-                                                    <p>File: <a href="{{ feedback.feedback_file.url }}" target="_blank">Download</a></p>
+                                                    <p>File: <a href="{{ feedback.feedback_file.url }}" target="_blank" class="text-decoration-none">Download</a></p>
                                                     {% endif %}
-                                                    <strong>Solved at :</strong>
-                                                    <p class="col-md-12">{{ feedback.provided_at }}</p>
+                                                    <strong>Solved at:</strong>
+                                                    <p class="text-secondary">{{ feedback.provided_at }}</p>
                                                 </li>
                                                 {% endfor %}
                                             </ul>
                                         </div>
                                         {% else %}
-                                        <div class="no-feedback">
-                                            <p>No feedback available for this case.</p>
+                                        <div class="alert alert-warning mt-3">
+                                            <i class="bi bi-exclamation-circle"></i> No feedback available from Legal Advisor.
                                         </div>
                                         {% endif %}
                                     </div>
@@ -361,9 +395,10 @@
                         </div>
                         {% endfor %}
                     </div>
-                    {% else %}
-                    <p style="color: rgb(165, 31, 31); margin-top: 100px; margin-left: 20%;">No cases found for your account.</p>
-                    {% endif %}
+                {% else %}
+                    <p class="text-danger text-center mt-5">No cases found for your account.</p>
+                {% endif %}
+                
 
                 </div>
             </div>
@@ -372,6 +407,82 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+<script>
+    function downloadTableAsPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF("p", "mm", "a4");
+
+        // **Header**
+        doc.setFontSize(18);
+        doc.text("Cases Feedback Report", 70, 15);
+
+        // **Date of Report**          
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+        doc.text('Generated on: ' + new Date().toLocaleString(), doc.internal.pageSize.width / 2, 25, { align: 'center' });
+
+        doc.setDrawColor(0, 0, 0); 
+        doc.setLineWidth(0.5);
+        doc.line(15, 30, doc.internal.pageSize.width - 15, 30);
+
+        // **Table Data**
+        const tableData = [];
+        const headers = ["Title", "Description", "Assigned To", "Status", "Created On"];
+        
+        document.querySelectorAll('.case-list').forEach((caseItem, index) => {
+            tableData.push([
+                caseItem.querySelector('.case-title').textContent,
+                caseItem.querySelector('.case-description').textContent,
+                caseItem.querySelector('.text-success')?.textContent || "New",
+                caseItem.querySelector('.badge')?.textContent || "Unknown",
+                caseItem.querySelector('.case-date').textContent    
+            ]);
+        });
+
+        // **Auto Table (Beautiful Styling)**
+        doc.autoTable({
+            head: [headers],
+            body: tableData,
+            startY: 30,
+            styles: { fontSize: 10, cellPadding: 3 },
+            headStyles: { fillColor: [40, 167, 69], textColor: 255 },
+            alternateRowStyles: { fillColor: [240, 240, 240] },
+            margin: { top: 25 }
+        });
+
+        // **Save PDF**
+        doc.save('cases_feedback_report.pdf');
+    }
+
+    function downloadTableAsExcel() {
+        let tableData = [["No.", "Title", "Description", "Assigned To", "Status", "Created On"]];
+
+        document.querySelectorAll('.case-list').forEach((caseItem, index) => {
+            tableData.push([
+                index + 1,
+                caseItem.querySelector('.case-title').textContent,
+                caseItem.querySelector('.case-description').textContent,
+                caseItem.querySelector('.text-success')?.textContent || "New",
+                caseItem.querySelector('.badge')?.textContent || "Unknown",
+                caseItem.querySelector('.case-date').textContent
+            ]);
+        });
+
+        let ws = XLSX.utils.aoa_to_sheet(tableData);
+        
+        // **Auto Width for Columns**
+        let wscols = [{ wch: 5 }, { wch: 30 }, { wch: 50 }, { wch: 20 }, { wch: 10 }, { wch: 15 }];
+        ws['!cols'] = wscols;
+
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Cases Report");
+
+        // **Save as Excel**
+        XLSX.writeFile(wb, "cases_feedback_report.xlsx");
+    }
+</script>
 </body>
 
 </html>
