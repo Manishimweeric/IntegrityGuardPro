@@ -333,6 +333,8 @@ def edit_case(request, case_id):
                 user = investigator
                 user.save()
 
+                
+
             case.save()
             messages.success(request, 'Investigator assigned successfully and user marked as inactive.')
             return redirect('view_all_Cases')
