@@ -12,6 +12,46 @@ from .models import Case, Feedback,Evidence
 from django.conf import settings
 from datetime import datetime, timedelta
 
+
+def approaching_deadline_cases(request):
+    # Check if the user is logged in
+    user_id = request.session.get('user_id')
+    
+    if not user_id:
+        messages.error(request, "You need to log in as an investigator to access this page.")
+        return redirect('login')
+    
+    user = User.objects.get(id=request.session['user_id'])
+    name = request.session["name"]
+    role = request.session["user_type"]
+    
+    # Calculate the date 25 days ago (to find cases assigned 25+ days ago)
+    deadline_threshold = timezone.now() - timedelta(days=25)
+    
+    # Get cases that are approaching the 1-month mark (5 or fewer days remaining)
+    approaching_deadline_cases = Case.objects.filter(
+        assigned_to=user,
+        created_at__lte=deadline_threshold
+    ).order_by('created_at')
+    
+    # Calculate days remaining for each case
+    for case in approaching_deadline_cases:
+        # One month from assigned date
+        one_month_date = case.created_at + timedelta(days=30)
+        # Days remaining until one month
+        days_remaining = (one_month_date - timezone.now()).days
+        # Ensure we don't show negative days
+        case.days_remaining = max(0, days_remaining)
+    
+    context = {
+        'approaching_deadline_cases': approaching_deadline_cases,
+        'name': name,
+        'role': role,
+    }
+    
+    return render(request, 'investigator/approaching_deadline_cases.html', context)
+
+
 def index(request):
     return render(request, 'index.html')
 def admin_dashboard(request):
@@ -43,33 +83,61 @@ def admin_dashboard(request):
     }
     return render(request, 'Admin/admin_dashboard.html', context)
 
+
+from django.utils import timezone
+from datetime import timedelta
+
 def investigator_dashboard(request):
-     # Check if the user is logged   in
+    # Check if the user is logged in
     user_id = request.session.get('user_id')
     user_type = request.session.get('user_type')
-    user = User.objects.get(id=request.session['user_id'])
-    name = request.session["name"]
-    role= request.session["user_type"]
-    users = User.objects.filter(user_type="legalAdvisor")
-
-    if not user_id :
+    
+    if not user_id:
         messages.error(request, "You need to log in as a reporter to access this page.")
         return redirect('login')
-
+    
+    user = User.objects.get(id=request.session['user_id'])
+    name = request.session["name"]
+    role = request.session["user_type"]
+    
     # Fetch user-specific data
     total_cases = Case.objects.filter(assigned_to=user).count()
     cases_under_investigation = Case.objects.filter(assigned_to=user, status="under_investigation").count()
     resolved_cases = Case.objects.filter(assigned_to=user, status="resolved").count()
-
+    
+    # Calculate the date 25 days ago (to find cases assigned 25+ days ago)
+    # These cases will reach 1 month in 5 or fewer days
+    deadline_threshold = timezone.now() - timedelta(days=28)
+    
+    # Get cases that are approaching the 1-month mark (5 or fewer days remaining)
+    approaching_deadline_cases = Case.objects.filter(
+        assigned_to=user,
+        status="under_investigation",
+        created_at__lte=deadline_threshold
+    ).order_by('created_at')
+    
+    # Calculate days remaining for each case
+    for case in approaching_deadline_cases:
+        # One month from assigned date
+        one_month_date = case.created_at + timedelta(days=30)
+        # Days remaining until one month
+        days_remaining = (one_month_date - timezone.now()).days
+        # Ensure we don't show negative days
+        case.days_remaining = max(0, days_remaining)
+    
+    users = User.objects.filter(user_type="legalAdvisor")
+    
     context = {
         'total_cases': total_cases,
         'cases_under_investigation': cases_under_investigation,
         'resolved_cases': resolved_cases,
+        'approaching_deadline_cases': approaching_deadline_cases,
         'name': name,
         'users': users,
         'role': role,
     }
-    return render(request, 'investigator/investigator_dashboard.html',context)
+    
+    return render(request, 'investigator/investigator_dashboard.html', context)
 
 def Legal_Advisor_dashboard(request):
      # Check if the user is logged   in
@@ -595,42 +663,51 @@ def Internal_Investigetor_feedback_case(request, case_id):
     return redirect("Internal_Investigator_Case")  
 
 
+from django.core.paginator import Paginator
+from datetime import datetime, timedelta
+from django.shortcuts import render
+from .models import Case, User  # Make sure to import your models
+
 def Investigetor_Case_views_Solved(request):
     name = request.session["name"]
     role = request.session["user_type"]
     user = User.objects.get(id=request.session['user_id'])
     investigators = User.objects.filter(user_type='investigator', is_active=True)
 
-    
-    
     # Get the date filter parameters
     from_date = request.GET.get('from_date')
     to_date = request.GET.get('to_date')
-    
+
     # Base query
     cases = Case.objects.filter(assigned_to=user, status="resolved")
-    
-    # Apply date filters if provided
-    if from_date:
+
+    # Apply date filters if provided and valid
+    if from_date and from_date != 'None':
         cases = cases.filter(created_at__gte=from_date)
-    if to_date:
+    if to_date and to_date != 'None':
         # Add one day to include the end date fully
         to_date_obj = datetime.strptime(to_date, '%Y-%m-%d')
         next_day = to_date_obj + timedelta(days=1)
         cases = cases.filter(created_at__lt=next_day)
-    
+
     cases_with_feedback = cases.filter(feedbacks__isnull=False)
+
+    # Pagination
+    paginator = Paginator(cases,2)  # Show 10 cases per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
         'name': name,
         'role': role,
         'cases_with_feedback': cases_with_feedback,
-        'cases': cases,
+        'cases': page_obj,  # Pass the paginated cases
         'investigators': investigators,
         'from_date': from_date,
         'to_date': to_date,
     }
     return render(request, 'investigator/SolvedCase.html', context)
+
 
 
 def admin_Case_views_Solved(request):
@@ -906,14 +983,19 @@ def Legal_Case_views (request):
     else:
         cases = Case.objects.filter(Legal_assigned_to=user,status="under_Legal_Advisor")
     cases_with_evidence = cases.filter(evidence__isnull=False)
+    cases_with_feedback = cases.filter(feedbacks__isnull=False)
+      
     context = {
         'name': name,
         'role': role,
         'cases': cases,
         'investigators': investigators,
-        'cases_with_evidence': cases_with_evidence
+        'cases_with_evidence': cases_with_evidence,
+        'cases_with_feedback': cases_with_feedback,
     }
     return render(request, 'Legal/CaseAssigned.html', context)
+
+
 
 
 def Internal_Investigator_Case_views (request):
@@ -1003,7 +1085,7 @@ def internal_Investigator_Assign_edit_case(request, case_id):
     if request.method == 'POST':
         internal_Investigator_id = request.POST.get('internal_Investigator_id')
         if internal_Investigator_id:
-            internal_Investigator = User.objects.get(id=internal_Investigator_id)
+            internal_Investigators = User.objects.get(id=internal_Investigator_id)
 
             # Get the current month and year
             now = timezone.now()
@@ -1012,21 +1094,22 @@ def internal_Investigator_Assign_edit_case(request, case_id):
 
             # Count how many cases this Legal Advisor already has this month
             assigned_cases_count = Case.objects.filter(
-                Legal_assigned_to=internal_Investigator,
+                internal_Investigator=internal_Investigators,
                 created_at__year=current_year,
                 created_at__month=current_month
             ).count()
 
             if assigned_cases_count > 4:
-                messages.error(request, f'{internal_Investigator.fullname} already has 4 cases assigned this month.')
+                messages.error(request, f'{internal_Investigators.fullname} already has 4 cases assigned this month.')
                 return redirect('investigetor_case')
 
-            case.internal_Investigator = internal_Investigator
+            case.internal_Investigator = internal_Investigators
             case.status = "under_investigation"
 
             if case.assigned_to:
-                user = internal_Investigator
+                user = internal_Investigators
                 user.is_active = False
+                case.Assigned_at = now 
                 user.save()
 
             case.save()

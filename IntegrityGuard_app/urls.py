@@ -52,6 +52,8 @@ urlpatterns = [
      path('Internal_Investigator_Case/', views.Internal_Investigator_Case_views, name='Internal_Investigator_Case'),
      path('Internal_Investigetor_feedback_case/<int:case_id>/assigned/', views.Internal_Investigetor_feedback_case, name='Internal_Investigetor_feedback_case'),
 
+     path('investigator/approaching-deadlines/', views.approaching_deadline_cases, name='approaching_deadline_cases'),
+
 
      
 ]   

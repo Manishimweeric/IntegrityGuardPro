@@ -320,29 +320,36 @@
                                             <p><strong>Created on:</strong> {{ case.created_at|date:"M d, Y" }}</p>
 
                                             {% if case.feedbacks.all %}
-                                            <div class="case-feedback mt-3">
-                                                <h6 class="text-primary">Feedback:</h6>
+                                            <div class="case-feedback mt-3">                                              
                                                 <ul class="list-group">
                                                     {% for feedback in case.feedbacks.all %}
-                                                    <li class="list-group-item">
-                                                        <strong>Feedback Message:</strong>
-                                                        <p class="text-dark">{{ feedback.feedback_message }}</p>
-
-                                                        <strong>Feedback Documents:</strong>
-                                                        {% if feedback.feedback_file %}
-                                                        <p>File: <a href="{{ feedback.feedback_file.url }}" target="_blank" class="text-decoration-none">Download</a></p>
-                                                        {% endif %}
-                                                        <strong>Solved at:</strong>
-                                                        <p class="text-secondary">{{ feedback.provided_at }}</p>
-                                                    </li>
+                                                        <li class="list-group-item">
+                                                            {% if feedback.reported_role == "internal_Investigator" %}
+                                                                <p><strong class="text-primary">Investigation Report:</strong></p>
+                                                            {% elif feedback.reported_role == "legalAdvisor" %}
+                                                                <p><strong class="text-primary">Decision From Legal Adviser:</strong></p>
+                                                            {% endif %}
+                                        
+                                                            <strong>Feedback Message:</strong>
+                                                            <p class="text-dark">{{ feedback.feedback_message }}</p>
+                                        
+                                                            {% if feedback.feedback_file %}
+                                                                <strong>Feedback Documents:</strong>
+                                                                <p>File: <a href="{{ feedback.feedback_file.url }}" target="_blank" class="text-decoration-none">Download</a></p>
+                                                            {% endif %}
+                                        
+                                                            <strong>Solved at:</strong>
+                                                            <p class="text-secondary">{{ feedback.provided_at }}</p>
+                                                        </li>
                                                     {% endfor %}
                                                 </ul>
                                             </div>
-                                            {% else %}
+                                        {% else %}
                                             <div class="alert alert-warning mt-3">
                                                 <i class="bi bi-exclamation-circle"></i> No feedback available for this case.
                                             </div>
-                                            {% endif %}
+                                        {% endif %}
+                                        
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

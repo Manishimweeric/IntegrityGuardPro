@@ -1,0 +1,500 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approaching Deadline Cases</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom, #4facfe, #00f2fe);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            background: linear-gradient(to bottom, #007bff, #00f2fe);
+            color: #fff;
+            height: 100vh;
+            width: 270px;
+            position: fixed;
+            padding: 30px 20px;
+            box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h4 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .sidebar h5 {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .sidebar .nav-link {
+            color: black;
+            font-size: 1rem;
+            padding: 12px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.3rem;
+            margin-right: 10px;
+        }
+
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:hover {
+            background-color: rgb(131, 96, 32);
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .sidebar .nav-item:not(:last-child) {
+            margin-bottom: 15px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+            flex-grow: 1;
+            background-color: #f4f6f9;
+        }
+
+        .cases-container {
+            margin: 80px auto 30px;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 1200px;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .cases-container h2 {
+            color: #007bff;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* Navbar Styling */
+        .navbar-custom {
+            background: linear-gradient(to right, #007bff, #00f2fe);
+            padding: 15px 30px;
+            border-radius: 5px;
+            color: white;
+            position: fixed;
+            width: calc(100% - 300px);
+            z-index: 1000;
+            top: 20px;
+            margin-right: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .deadline-card {
+            border-left: 5px solid #dc3545;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .deadline-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.2);
+            border-left: 5px solid #ff3545;
+        }
+
+        .deadline-card .card-title {
+            color: #333;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .days-remaining {
+            font-weight: bold;
+            color: #dc3545;
+            font-size: 1.1rem;
+        }
+
+        .deadline-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .deadline-info .date-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .card-description {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h4 {
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .priority-high {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        .priority-medium {
+            background-color: rgba(255, 193, 7, 0.1);
+        }
+
+        .priority-low {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+
+        .case-priority {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .priority-high .case-priority {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        .priority-medium .case-priority {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #d18700;
+        }
+
+        .priority-low .case-priority {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+        
+        .filter-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            align-items: center;
+        }
+        
+        .filter-section .form-select {
+            width: auto;
+            max-width: 200px;
+        }
+        
+        .search-box {
+            position: relative;
+            max-width: 300px;
+        }
+        
+        .search-box input {
+            padding-left: 35px;
+            border-radius: 20px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 10px;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h4>ACMS</h4>
+            <h5>{{ name }}</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'investigator_dashboard' %}" 
+                       class="nav-link {% if request.resolver_match.url_name == 'investigator_dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'Legal_advisor_List' %}" 
+                       class="nav-link {% if request.resolver_match.url_name == 'Legal_advisor_List' %}active{% endif %}">
+                        <i class="bi bi-people me-2"></i> Legal Advisor
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'collabration' %}" 
+                       class="nav-link {% if request.resolver_match.url_name == 'collabration' %}active{% endif %}">
+                        <i class="bi bi-people me-2"></i> Collaboration
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'messages' %}" 
+                       class="nav-link {% if request.resolver_match.url_name == 'messages' %}active{% endif %}">
+                        <i class="bi bi-envelope-fill me-2"></i> Messages
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'investigetor_case' %}" 
+                       class="nav-link {% if request.resolver_match.url_name == 'investigetor_case' %}active{% endif %}">
+                        <i class="bi bi-briefcase-fill me-2"></i> Assigned Cases
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'approaching_deadline_cases' %}" 
+                       class="nav-link {% if request.resolver_match.url_name == 'approaching_deadline_cases' %}active{% endif %}">
+                        <i class="bi bi-alarm-fill me-2"></i> Deadline Cases
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'investigetor_solved' %}" 
+                       class="nav-link {% if request.resolver_match.url_name == 'investigetor_solved' %}active{% endif %}">
+                        <i class="bi bi-check-circle-fill me-2"></i> Solved Cases
+                    </a>
+                </li>
+            </ul>
+        </div>
+    
+        <!-- Main Content -->
+        <div class="main-content">
+            <nav class="navbar navbar-expand-lg navbar-custom">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-alarm-fill me-2 fs-4"></i>
+                    <span class="fs-5">Approaching One-Month Deadline Cases</span>
+                </div>
+                <div class="dropdown ms-auto">
+                    <button class="btn text-white dropdown-toggle" type="button" id="navbarDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <span>{{ role }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'Updatesinvestigetor' %}">Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+    
+            <div class="cases-container">
+                <h2><i class="bi bi-clock-history me-2"></i>Cases Approaching One-Month Deadline</h2>
+                
+                <div class="filter-section">
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="form-control" id="caseSearch" placeholder="Search cases...">
+                    </div>
+                    <div class="d-flex gap-3">
+                        <select class="form-select" id="sortBy">
+                            <option value="deadline">Sort by: Deadline (Closest First)</option>
+                            <option value="title">Sort by: Title (A-Z)</option>
+                            <option value="date">Sort by: Assignment Date</option>
+                        </select>
+                    </div>
+                </div>
+                
+                {% if approaching_deadline_cases %}
+                    <div id="casesList">
+                        {% for case in approaching_deadline_cases %}
+                            {% if case.days_remaining <= 2 %}
+                                {% with priority="high" %}
+                                    <div class="deadline-card priority-{{ priority }}" data-title="{{ case.title|lower }}" data-deadline="{{ case.days_remaining }}" data-date="{{ case.Assigned_date|date:'Y-m-d' }}">
+                                        <div class="card-header">
+                                            <h5 class="card-title">{{ case.title }} 
+                                                <span class="case-priority">High Priority</span>
+                                            </h5>
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-alarm me-1"></i>
+                                                <span class="days-remaining">{{ case.days_remaining }}</span> days left
+                                            </span>
+                                        </div>
+                                        <div class="card-description">
+                                            {{ case.description }}
+                                        </div>
+                                        <div class="deadline-info">
+                                            <div class="date-info">
+                                                <div><strong>Assigned Date:</strong> {{ case.Assigned_date|date:"M d, Y" }}</div>
+                                                <div><strong>One Month Deadline:</strong> {{ case.Assigned_date|date:"M d, Y" }}</div>
+                                            </div>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'case_detail' case.id %}" class="btn btn-primary">
+                                                    <i class="bi bi-eye-fill me-1"></i> View Details
+                                                </a>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endwith %}
+                            {% elif case.days_remaining <= 3 %}
+                                {% with priority="medium" %}
+                                    <div class="deadline-card priority-{{ priority }}" data-title="{{ case.title|lower }}" data-deadline="{{ case.days_remaining }}" data-date="{{ case.Assigned_date|date:'Y-m-d' }}">
+                                        <div class="card-header">
+                                            <h5 class="card-title">{{ case.title }} 
+                                                <span class="case-priority">Medium Priority</span>
+                                            </h5>
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-alarm me-1"></i>
+                                                <span class="days-remaining">{{ case.days_remaining }}</span> days left
+                                            </span>
+                                        </div>
+                                        <div class="card-description">
+                                            {{ case.description }}
+                                        </div>
+                                        <div class="deadline-info">
+                                            <div class="date-info">
+                                                <div><strong>Assigned Date:</strong> {{ case.Assigned_at|date:"M d, Y" }}</div>
+                                                <div><strong>One Month Deadline:</strong> {{ case.Assigned_date|date:"M d, Y" }}</div>
+                                            </div>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'case_detail' case.id %}" class="btn btn-primary">
+                                                    <i class="bi bi-eye-fill me-1"></i> View Details
+                                                </a>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endwith %}
+                            {% else %}
+                                {% with priority="low" %}
+                                    <div class="deadline-card priority-{{ priority }}" data-title="{{ case.title|lower }}" data-deadline="{{ case.days_remaining }}" data-date="{{ case.Assigned_date|date:'Y-m-d' }}">
+                                        <div class="card-header">
+                                            <h5 class="card-title">{{ case.title }} 
+                                                <span class="case-priority">Standard Priority</span>
+                                            </h5>
+                                            <span class="badge bg-primary">
+                                                <i class="bi bi-alarm me-1"></i>
+                                                <span class="days-remaining">{{ case.days_remaining }}</span> days left
+                                            </span>
+                                        </div>
+                                        <div class="card-description">
+                                            {{ case.description }}
+                                        </div>
+                                        <div class="deadline-info">
+                                            <div class="date-info">
+                                                <div><strong>Assigned Date:</strong> {{ case.Assigned_date|date:"M d, Y" }}</div>
+                                                <div><strong>One Month Deadline:</strong> {{ case.Assigned_date|date:"M d, Y" }}</div>
+                                            </div>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'case_detail' case.id %}" class="btn btn-primary">
+                                                    <i class="bi bi-eye-fill me-1"></i> View Details
+                                                </a>
+                                               
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endwith %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-check"></i>
+                        <h4>No Deadline Alerts</h4>
+                        <p>Great job! You don't have any cases approaching the one-month deadline right now.</p>
+                        <a href="{% url 'investigetor_case' %}" class="btn btn-primary mt-3">
+                            View All Cases
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Search functionality
+        document.getElementById('caseSearch').addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const caseElements = document.querySelectorAll('#casesList .deadline-card');
+            
+            caseElements.forEach(function(caseElement) {
+                const caseTitle = caseElement.getAttribute('data-title');
+                if (caseTitle.includes(searchValue)) {
+                    caseElement.style.display = 'block';
+                } else {
+                    caseElement.style.display = 'none';
+                }
+            });
+        });
+        
+        // Sorting functionality
+        document.getElementById('sortBy').addEventListener('change', function() {
+            const sortValue = this.value;
+            const casesList = document.getElementById('casesList');
+            const caseElements = Array.from(document.querySelectorAll('#casesList .deadline-card'));
+            
+            caseElements.sort(function(a, b) {
+                if (sortValue === 'deadline') {
+                    return parseInt(a.getAttribute('data-deadline')) - parseInt(b.getAttribute('data-deadline'));
+                } else if (sortValue === 'title') {
+                    return a.getAttribute('data-title').localeCompare(b.getAttribute('data-title'));
+                } else if (sortValue === 'date') {
+                    return a.getAttribute('data-date').localeCompare(b.getAttribute('data-date'));
+                }
+            });
+            
+            caseElements.forEach(function(caseElement) {
+                casesList.appendChild(caseElement);
+            });
+        });
+    </script>
+</body>
+</html>

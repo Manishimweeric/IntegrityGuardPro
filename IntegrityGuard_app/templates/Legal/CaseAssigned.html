@@ -358,7 +358,35 @@
                                                 {% else %}
                                                     <p>No evidence provided yet.</p>
                                                 {% endif %}
+
+                                                
+                                            {% if case.feedbacks.all %}
+                                            <div class="case-feedback mt-3">
+                                                <h6 class="text-primary">Investigation Report :</h6>
+                                                <ul class="list-group">
+                                                    {% for feedback in case.feedbacks.all %}
+                                                    <li class="list-group-item">
+                                                        <strong>Feedback Message:</strong>
+                                                        <p class="text-dark">{{ feedback.feedback_message }}</p>
+
+                                                        <strong>Feedback Documents:</strong>
+                                                        {% if feedback.feedback_file %}
+                                                        <p>File: <a href="{{ feedback.feedback_file.url }}" target="_blank" class="text-decoration-none">Download</a></p>
+                                                        {% endif %}
+                                                        <strong>Solved at:</strong>
+                                                        <p class="text-secondary">{{ feedback.provided_at }}</p>
+                                                    </li>
+                                                    {% endfor %}
+                                                </ul>
                                             </div>
+                                            {% else %}
+                                            <div class="alert alert-warning mt-3">
+                                                <i class="bi bi-exclamation-circle"></i> No Investigation Report available for this case.
+                                            </div>
+                                            {% endif %}
+                                            </div>
+
+                                            
                                             <div class="modal-footer" style="background-color: #f8f9fa; border-radius: 0 0 15px 15px;">
                                                 <button type="button" class="btn btn-outline-primary {% if case.status != 'under_Legal_Advisor' %}disabled{% endif %}" data-bs-toggle="collapse" data-bs-target="#editForm{{ case.id }}" {% if case.status != 'under_Legal_Advisor' %}title="You can only assign investigators to reported cases" disabled{% endif %}>
                                                     <i class="bi bi-person-lines-fill me-2"></i>Feedback
