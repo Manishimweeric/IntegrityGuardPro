@@ -10,6 +10,7 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 from .models import Case, Feedback,Evidence
 from django.conf import settings
+from datetime import datetime, timedelta
 
 def index(request):
     return render(request, 'index.html')
@@ -93,6 +94,33 @@ def Legal_Advisor_dashboard(request):
     }
     return render(request, 'Legal/Legal_Dashboard.html',context)
 
+
+def Internal_Investigator_Dashboard(request):
+    user_id = request.session.get('user_id')
+    user_type = request.session.get('user_type')
+    user = User.objects.get(id=request.session['user_id'])
+
+    name = request.session["name"]
+    role= request.session["user_type"]
+
+    # Fetch user-specific data
+    total_cases = Case.objects.filter(Legal_assigned_to=user).count()
+    cases_under_investigation = Case.objects.filter(internal_Investigator=user, status="under_investigation").count()
+    resolved_cases = Case.objects.filter(internal_Investigator=user, status="resolved").count()
+
+    context = {
+        'total_cases': total_cases,
+        'cases_under_investigation': cases_under_investigation,
+        'resolved_cases': resolved_cases,
+        'name': name,
+        'role': role,
+    }
+
+    return render(request, 'Internal/Internal_Dashboard.html',context)
+
+
+
+
 def reporter_dashboard(request):
     # Check if the user is logged   in
     user_id = request.session.get('user_id')
@@ -119,6 +147,8 @@ def reporter_dashboard(request):
         'role': role,
     }
     return render(request, 'Reporter/reporter_dashboard.html', context)
+
+
 def login(request):
     return render(request, 'login.html')
 
@@ -179,7 +209,9 @@ def login_view(request):
                 elif user.user_type == 'reporter':
                     return redirect('reporter_dashboard') 
                 elif user.user_type == 'legalAdvisor':
-                    return redirect('Legal_Dashboard')  
+                    return redirect('Legal_Dashboard') 
+                elif user.user_type == 'internal_Investigator':
+                    return redirect('Internal_Investigator_Dashboard')  
                 else:
                     return redirect('login')  
             else:
@@ -448,23 +480,38 @@ def Messages_view(request):
     }
     return render(request, 'investigator/Message.html', context)
 
-def Investigetor_Case_views (request):
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+def Investigetor_Case_views(request):
     name = request.session["name"]
-    role= request.session["user_type"]
+    role = request.session["user_type"]
     user = User.objects.get(id=request.session['user_id'])
     investigators = User.objects.filter(user_type='legalAdvisor')
+    internal_Investigator = User.objects.filter(user_type='internal_Investigator')
     status = request.GET.get('status')
-
     if status:
-        cases = Case.objects.filter(assigned_to=user,status=status)
+        cases_list = Case.objects.filter(assigned_to=user, status=status)
     else:
-        cases = Case.objects.filter(assigned_to=user,status="under_investigation")
-
+        cases_list = Case.objects.filter(assigned_to=user, status="under_investigation")
+    
+    page = request.GET.get('page', 1)
+    paginator = Paginator(cases_list, 3) 
+    
+    try:
+        cases = paginator.page(page)
+    except PageNotAnInteger:
+        cases = paginator.page(1)
+    except EmptyPage:
+        cases = paginator.page(paginator.num_pages)
+    
+    cases_with_feedback = cases_list.filter(feedbacks__isnull=False)
     context = {
         'name': name,
         'role': role,
         'cases': cases,
         'investigators': investigators,
+        'internal_Investigators': internal_Investigator,
+        'cases_with_feedback': cases_with_feedback,
     }
     return render(request, 'investigator/CaseAssigned.html', context)
 
@@ -484,6 +531,7 @@ def assigned_case(request, case_id):
 
 
 def Ligal_assigned_case(request, case_id):
+    role = request.session["user_type"]
     if request.method == "POST":
         user = User.objects.get(id=request.session['user_id'])
         case = get_object_or_404(Case, id=case_id)
@@ -494,7 +542,8 @@ def Ligal_assigned_case(request, case_id):
             case=case,
             feedback_message=description,
             provided_by=user,
-            reported_by=user_reported_by
+            reported_by=user_reported_by,
+            reported_role=role
         )
 
         if evidence_file:
@@ -513,15 +562,63 @@ def Ligal_assigned_case(request, case_id):
 
     return redirect("Legal_case")  
 
+def Internal_Investigetor_feedback_case(request, case_id):
+    role = request.session["user_type"]
+    if request.method == "POST":
+        user = User.objects.get(id=request.session['user_id'])
+        case = get_object_or_404(Case, id=case_id)
+        user_reported_by=User.objects.get(id=case.reported_by.id)
+        description = request.POST.get("description")
+        evidence_file = request.FILES.get("evidence_file")
+        feedback = Feedback.objects.create(
+            case=case,
+            feedback_message=description,
+            provided_by=user,
+            reported_by=user_reported_by,
+            reported_role=role
+        )
 
-def Investigetor_Case_views_Solved (request):
+        if evidence_file:
+            fs = FileSystemStorage(location=settings.MEDIA_ROOT)
+            filename = fs.save(evidence_file.name, evidence_file)
+            feedback.feedback_file = filename
+
+        case.status = 'under_investigation'
+        case.save()
+        user.is_active = True
+        user.save()
+
+        feedback.save()
+        messages.success(request, "Feedback sent successfully!")
+        return redirect("Internal_Investigator_Case")  
+
+    return redirect("Internal_Investigator_Case")  
+
+
+def Investigetor_Case_views_Solved(request):
     name = request.session["name"]
-    role= request.session["user_type"]
+    role = request.session["user_type"]
     user = User.objects.get(id=request.session['user_id'])
-    investigators = User.objects.filter(user_type='investigator',is_active=True) 
+    investigators = User.objects.filter(user_type='investigator', is_active=True)
+
+    
+    
+    # Get the date filter parameters
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+    
+    # Base query
     cases = Case.objects.filter(assigned_to=user, status="resolved")
     
-    # Fetch cases that have at least one associated feedback
+    # Apply date filters if provided
+    if from_date:
+        cases = cases.filter(created_at__gte=from_date)
+    if to_date:
+        # Add one day to include the end date fully
+        to_date_obj = datetime.strptime(to_date, '%Y-%m-%d')
+        next_day = to_date_obj + timedelta(days=1)
+        cases = cases.filter(created_at__lt=next_day)
+    
     cases_with_feedback = cases.filter(feedbacks__isnull=False)
 
     context = {
@@ -530,22 +627,54 @@ def Investigetor_Case_views_Solved (request):
         'cases_with_feedback': cases_with_feedback,
         'cases': cases,
         'investigators': investigators,
+        'from_date': from_date,
+        'to_date': to_date,
     }
     return render(request, 'investigator/SolvedCase.html', context)
 
 
-def admin_Case_views_Solved (request):
+def admin_Case_views_Solved(request):
     name = request.session["name"]
-    role= request.session["user_type"]
+    role = request.session["user_type"]
+    
+    # Default to all resolved cases
     cases = Case.objects.filter(status="resolved")
+    
+    # Handle date filtering
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+    
+    if from_date and to_date:
+        # Convert to proper date format and filter
+        cases = cases.filter(
+            created_at__date__gte=from_date,
+            created_at__date__lte=to_date
+        )
     
     context = {
         'name': name,
         'role': role,
         'cases': cases,
+        'from_date': from_date,
+        'to_date': to_date,
     }
     return render(request, 'admin/SolvedCase.html', context)
 
+
+
+def case_detail_view(request, case_id):
+    name = request.session["name"]
+    role = request.session["user_type"]
+    
+    # Get the case or return 404 if not found
+    case = get_object_or_404(Case, id=case_id)
+    
+    context = {
+        'name': name,
+        'role': role,
+        'case': case,
+    }
+    return render(request, 'admin/case_detail.html', context)
 
 def Reporter_Case_views_Solved (request):
     name = request.session["name"]
@@ -721,7 +850,7 @@ def LegalAdvisor (request):
         address = request.POST.get('address')
         phone_number = request.POST.get('phone_number')
         email = request.POST.get('email')
-        user_types="legalAdvisor"
+        user_types=request.POST.get('role')
         password=123456789
 
         if User.objects.filter(email=email).exists():
@@ -750,10 +879,14 @@ def LegalAdvisor (request):
     }
     return render(request, 'investigator/LegalAdvisor.html', context)
 
+from django.db.models import Q
 def LegalAdvisorList (request):
     name = request.session["name"]
-    role= request.session["user_type"]
-    legal_advisors = User.objects.filter(user_type="legalAdvisor")
+    role= request.session["user_type"]   
+
+    legal_advisors = User.objects.filter(
+        Q(user_type="legalAdvisor") | Q(user_type="internal_Investigator")
+    )
     context = {
         'name': name,
         'role': role,
@@ -768,15 +901,11 @@ def Legal_Case_views (request):
     user = User.objects.get(id=request.session['user_id'])
     investigators = User.objects.filter(user_type='legalAdvisor',is_active=True)
     status = request.GET.get('status')  
-
     if status:
         cases = Case.objects.filter(Legal_assigned_to=user,status=status)
     else:
         cases = Case.objects.filter(Legal_assigned_to=user,status="under_Legal_Advisor")
-
     cases_with_evidence = cases.filter(evidence__isnull=False)
-
-
     context = {
         'name': name,
         'role': role,
@@ -785,6 +914,31 @@ def Legal_Case_views (request):
         'cases_with_evidence': cases_with_evidence
     }
     return render(request, 'Legal/CaseAssigned.html', context)
+
+
+def Internal_Investigator_Case_views (request):
+    name = request.session["name"]
+    role= request.session["user_type"]
+    user = User.objects.get(id=request.session['user_id'])
+    investigators = User.objects.filter(user_type='internal_Investigator',is_active=True)
+    status = request.GET.get('status')  
+    if status:
+        cases = Case.objects.filter(Legal_assigned_to=user,status=status)
+    else:
+        cases = Case.objects.filter(Legal_assigned_to=user,status="under_investigation")
+    cases_with_evidence = cases.filter(evidence__isnull=False)
+    cases_with_feedback = cases.filter(feedbacks__isnull=False)
+    context = {
+        'name': name,
+        'role': role,
+        'cases': cases,
+        'investigators': investigators,
+        'cases_with_feedback': cases_with_feedback,
+        'cases_with_evidence': cases_with_evidence
+    }
+    return render(request, 'Internal/Case_Assigned.html', context)
+
+
 
 def Legal_Case_views_Solved (request):
     name = request.session["name"]
@@ -804,6 +958,7 @@ def Legal_Case_views_Solved (request):
         'investigators': investigators,
     }
     return render(request, 'Legal/SolvedCase.html', context)
+
 
 
 def Legal_Assign_edit_case(request, case_id):
@@ -838,6 +993,61 @@ def Legal_Assign_edit_case(request, case_id):
         'investigators': investigators,
     }
     return render(request, 'investigator/CaseAssigned.html', context)
+
+from django.utils import timezone
+
+def internal_Investigator_Assign_edit_case(request, case_id):
+    case = get_object_or_404(Case, id=case_id)
+    investigators = User.objects.all()
+
+    if request.method == 'POST':
+        internal_Investigator_id = request.POST.get('internal_Investigator_id')
+        if internal_Investigator_id:
+            internal_Investigator = User.objects.get(id=internal_Investigator_id)
+
+            # Get the current month and year
+            now = timezone.now()
+            current_month = now.month
+            current_year = now.year
+
+            # Count how many cases this Legal Advisor already has this month
+            assigned_cases_count = Case.objects.filter(
+                Legal_assigned_to=internal_Investigator,
+                created_at__year=current_year,
+                created_at__month=current_month
+            ).count()
+
+            if assigned_cases_count > 4:
+                messages.error(request, f'{internal_Investigator.fullname} already has 4 cases assigned this month.')
+                return redirect('investigetor_case')
+
+            case.internal_Investigator = internal_Investigator
+            case.status = "under_investigation"
+
+            if case.assigned_to:
+                user = internal_Investigator
+                user.is_active = False
+                user.save()
+
+            case.save()
+            messages.success(request, 'Internal_Investigator assigned successfully.')
+            return redirect('investigetor_case')
+        else:
+            messages.error(request, 'Please select a internal_Investigator.')
+
+    name = request.session["name"]
+    role = request.session["user_type"]
+    cases = Case.objects.all()
+    investigators = User.objects.filter(user_type='internal_Investigator', is_active=True)
+
+    context = {
+        'name': name,
+        'role': role,
+        'cases': cases,
+        'investigators': investigators,
+    }
+    return render(request, 'investigator/CaseAssigned.html', context)
+
 
 
 def Adding_Evidence_case(request, case_id):

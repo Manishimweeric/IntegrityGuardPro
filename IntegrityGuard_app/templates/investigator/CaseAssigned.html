@@ -295,6 +295,9 @@
                             <a href="{% url 'investigetor_case' %}" class="btn btn-outline-primary {% if not request.GET.status %}active{% endif %}" style="margin-left: 20%;">
                             New Cases
                             </a>
+                            <a href="{% url 'investigetor_case' %}?status=under_investigation" class="btn btn-outline-primary {% if request.GET.status == 'under_investigation' %}active{% endif %}"  style="margin-left: 5%;">
+                                under_investigation
+                            </a>
                             <a href="{% url 'investigetor_case' %}?status=resolved" class="btn btn-outline-primary {% if request.GET.status == 'resolved' %}active{% endif %}"  style="margin-left: 5%;">
                                 Resolved
                             </a>
@@ -324,6 +327,18 @@
                                         </small>
                                         <br>
                                         <small>
+                                            Internal Investigator to: <span style="color: rgb(24, 88, 24);">
+                                                {% if case.assigned_to %}{{ case.internal_Investigator.fullname }}{% else %}None{% endif %}
+                                            </span>
+                                        </small>
+                                        <br>
+                                        <small>
+                                            Regal Advisor to: <span style="color: rgb(24, 88, 24);">
+                                                {% if case.assigned_to %}{{ case.Legal_assigned_to.fullname }}{% else %}None{% endif %}
+                                            </span>
+                                        </small>
+                                        <br>
+                                        <small>
                                             Status : <span style="color: rgb(24, 88, 24);">
                                                 {{ case.status }}
                                             </span>
@@ -335,6 +350,47 @@
                                         <i class="bi bi-info-circle"></i>
                                     </div>
                                 </a>
+                                {% if cases.paginator.num_pages > 1 %}
+                                    <nav aria-label="Page navigation" class="mt-4">
+                                        <ul class="pagination justify-content-center">
+                                            {% if cases.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page=1" aria-label="First">
+                                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                                </a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ cases.previous_page_number }}" aria-label="Previous">
+                                                    <span aria-hidden="true">&laquo;</span>
+                                                </a>
+                                            </li>
+                                            {% endif %}
+
+                                            {% for num in cases.paginator.page_range %}
+                                                {% if cases.number == num %}
+                                                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                                                {% elif num > cases.number|add:'-3' and num < cases.number|add:'3' %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ num }}">{{ num }}</a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+
+                                            {% if cases.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ cases.next_page_number }}" aria-label="Next">
+                                                    <span aria-hidden="true">&raquo;</span>
+                                                </a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ cases.paginator.num_pages }}" aria-label="Last">
+                                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                    {% endif %}
                            
                             
 
@@ -363,7 +419,38 @@
                                         </p>
                                         <p><strong><i class="bi bi-calendar3 me-2"></i>Created on:</strong>
                                             {{ case.created_at|date:"M d, Y" }}</p>
+
+
+                                            {% if case.feedbacks.all %}
+                                            <div class="case-feedback mt-3">
+                                                <h6 class="text-primary">Investigation Report :</h6>
+                                                <ul class="list-group">
+                                                    {% for feedback in case.feedbacks.all %}
+                                                    <li class="list-group-item">
+                                                        <strong>Feedback Message:</strong>
+                                                        <p class="text-dark">{{ feedback.feedback_message }}</p>
+
+                                                        <strong>Feedback Documents:</strong>
+                                                        {% if feedback.feedback_file %}
+                                                        <p>File: <a href="{{ feedback.feedback_file.url }}" target="_blank" class="text-decoration-none">Download</a></p>
+                                                        {% endif %}
+                                                        <strong>Solved at:</strong>
+                                                        <p class="text-secondary">{{ feedback.provided_at }}</p>
+                                                    </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            {% else %}
+                                            <div class="alert alert-warning mt-3">
+                                                <i class="bi bi-exclamation-circle"></i> No Investigation Report available for this case.
+                                            </div>
+                                            {% endif %}
                                     </div>
+
+
+                                    
+
+
                                     <div class="modal-footer mb-5" style="background-color: #f8f9fa; border-radius: 0 0 15px 15px;">                                     
                                         <!-- Close Case Button -->
                                         <button type="button" class="btn btn-outline-primary {% if case.status != 'under_investigation' %}disabled{% endif %}" 
@@ -371,20 +458,33 @@
                                                 {% if case.status != 'under_investigation' %}title="You can only close the case to Under Investigator cases" disabled{% endif %}>
                                             <i class="bi bi-person-lines-fill me-2"></i> Close Case
                                         </button>
-                                    
-                                        <!-- Assign Legal Advisor Button -->
-                                        <button type="button" class="btn btn-outline-success {% if case.status != 'under_investigation' %}disabled{% endif %}" 
-                                                data-bs-toggle="collapse" data-bs-target="#assignedForm{{ case.id }}" 
-                                                {% if case.status != 'under_investigation' %}title="You can only assign Legal Advisor to Under Investigator cases" disabled{% endif %}>
-                                            <i class="bi bi-person-lines-fill me-2"></i> Assign Legal Advisor
-                                        </button>
-                                    
-                                        <!-- Add Evidence Button -->
+                                        
+
+                                         <!-- Assign Dropdown -->
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-success dropdown-toggle" type="button" id="assignDropdown{{ case.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bi bi-person-lines-fill me-2"></i> Assign
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="assignDropdown{{ case.id }}" style="width: 250px;">
+                                                    <li>
+                                                        <button type="button" class="btn{% if case.status != 'under_investigation' %}disabled{% endif %}" 
+                                                        data-bs-toggle="collapse" data-bs-target="#assignedForm{{ case.id }}" 
+                                                        {% if case.status != 'under_investigation' %}title="You can only assign Legal Advisor to Under Investigator cases" disabled{% endif %}>
+                                                    <i class="bi bi-person-lines-fill me-2"></i> Legal Advisor
+                                                </button>
+                                                    </li>
+                                                    <li>
+                                                        <button type="button" class="btn" data-bs-toggle="collapse" data-bs-target="#assignedForminternal_Investigator{{ case.id }}">
+                                                            <i class="bi bi-person-lines-fill me-2"></i>Internal Investigator
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
                                         <button type="button" class="btn btn-outline-warning" data-bs-toggle="collapse" data-bs-target="#addevidenceForm{{ case.id }}">
                                             <i class="bi bi-file-earmark-arrow-up me-2"></i> Add New Evidence
                                         </button>
                                     
-                                        <!-- Close Modal Button -->
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                     </div>
                                     
@@ -393,11 +493,32 @@
                                         <form method="post" action="{% url 'Assigned_case_Legal_Advisor' case.id %}" style="padding: 20px;">
                                             {% csrf_token %}
                                             <div class="mb-3">
-                                                <label for="title{{ case.id }}" class="form-label text-black">Select Available Investigator</label>
+                                                <label for="title{{ case.id }}" class="form-label text-black">Select Available Legal Advisor</label>
                                                 <select class="form-select" name="legal_id" id="investigator{{ case.id }}" required>
                                                     <option value="">Select Investigator</option>
                                                     {% for investigator in investigators %}
                                                         <option value="{{ investigator.id }}" class="mt-2 mb-2">{{ investigator.fullname }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-success border">
+                                                    <i class="bi bi-save me-2"></i> Assign Changes
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                     <!-- Assigned Form internal_Investigator -->
+                                     <div class="collapse " id="assignedForminternal_Investigator{{ case.id }}" >
+                                        <form method="post" action="{% url 'Assign_case_Internal_Investigator' case.id %}" style="padding: 20px;">
+                                            {% csrf_token %}
+                                            <div class="mb-3">
+                                                <label for="title{{ case.id }}" class="form-label text-black">Select Available Internal Investigator</label>
+                                                <select class="form-select" name="internal_Investigator_id" id="investigator{{ case.id }}" required>
+                                                    <option value="">Select Internal Investigator</option>
+                                                    {% for internal_Investigator in internal_Investigators %}
+                                                        <option value="{{ internal_Investigator.id }}" class="mt-2 mb-2">{{ internal_Investigator.fullname }}</option>
                                                     {% endfor %}
                                                 </select>
                                             </div>

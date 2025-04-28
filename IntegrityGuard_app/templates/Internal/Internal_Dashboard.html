@@ -173,155 +173,113 @@
 <body>
     <div class="d-flex">
         <!-- Sidebar -->
-        <div class="sidebar">
-            <h4>ACMS</h4>
+        <div class="sidebar p-4" style="background-color: #f8f9fa; height: 100vh; width: 250px; border-radius: 10px;">
+            <h4 class="">ACMS</h4>
             <h5>{{ name }}</h5>
             <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="{% url 'investigator_dashboard' %}" 
-                       class="nav-link {% if request.resolver_match.url_name == 'investigator_dashboard' %}active{% endif %}">
+                <li class="nav-item mb-2">
+                    <a href="{% url 'Internal_Investigator_Dashboard' %}"
+                       class="nav-link {% if request.resolver_match.url_name == 'Legal_Dashboard' %}active{% endif %}">
                         <i class="bi bi-speedometer2 me-2"></i> Dashboard
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{% url 'Legal_advisor_List' %}" 
-                       class="nav-link {% if request.resolver_match.url_name == 'Legal_advisor_List' %}active{% endif %}">
-                        <i class="bi bi-people me-2"></i> Legal Advisor
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'collabration' %}" 
-                       class="nav-link {% if request.resolver_match.url_name == 'collabration' %}active{% endif %}">
-                        <i class="bi bi-people me-2"></i> Collaboration
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'messages' %}" 
-                       class="nav-link {% if request.resolver_match.url_name == 'messages' %}active{% endif %}">
-                        <i class="bi bi-envelope-fill me-2"></i> Messages
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'investigetor_case' %}" 
-                       class="nav-link {% if request.resolver_match.url_name == 'investigetor_case' %}active{% endif %}">
+                <li class="nav-item mb-2">
+                    <a href="{% url 'Internal_Investigator_Case' %}"
+                       class="nav-link {% if request.resolver_match.url_name == 'Legal_case' %}active{% endif %}">
                         <i class="bi bi-briefcase-fill me-2"></i> Assigned Cases
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{% url 'investigetor_solved' %}" 
-                       class="nav-link {% if request.resolver_match.url_name == 'investigetor_solved' %}active{% endif %}">
+                <!-- <li class="nav-item mb-2">
+                    <a href="{% url 'Legal_solved' %}"
+                       class="nav-link {% if request.resolver_match.url_name == 'Legal_solved' %}active{% endif %}">
                         <i class="bi bi-check-circle-fill me-2"></i> Solved Cases
                     </a>
-                </li>
+                </li> -->
             </ul>
         </div>
     
-        <!-- Main Content -->
-        <div class="main-content">
+        <div class="main-content flex-grow-1 p-4">
+            <!-- Navbar -->
             <nav class="navbar navbar-expand-lg navbar-custom">
-                <span> Welcome, {{ name }}</span>
+                <span> Welcome &nbsp;&nbsp; {{ name }}</span>
                 <div class="dropdown ms-auto">
                     <button class="btn text-white dropdown-toggle" type="button" id="navbarDropdown"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                        <span>{{ role }}</span>
+                        <span>{{role}}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'Updatesinvestigetor' %}">Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'UpdateslegalProfile' %}">Profile </a></li>
                         <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                     </ul>
                 </div>
             </nav>
     
+            <!-- Dashboard Stats -->
             <div class="dashboard-container">
-                <!-- Statistic Cards -->
                 <div class="row text-center">
                     <div class="col-md-4 mb-3">
-                        <div class="stat-box">
+                        <div class="stat-box p-3" style="background-color: #e9ecef; border-radius: 10px;">
                             <h3>{{ total_cases }}</h3>
                             <p>Total Cases</p>
                         </div>
                     </div>
+    
                     <div class="col-md-4 mb-3">
-                        <div class="stat-box">
+                        <div class="stat-box p-3" style="background-color: #e9ecef; border-radius: 10px;">
                             <h3>{{ cases_under_investigation }}</h3>
                             <p>Pending Cases</p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <div class="stat-box">
+                        <div class="stat-box p-3" style="background-color: #e9ecef; border-radius: 10px;">
                             <h3>{{ resolved_cases }}</h3>
                             <p>Resolved Cases</p>
                         </div>
                     </div>
                 </div>
     
-               <!-- Case Status Chart & User List -->
-            <div class="d-flex flex-wrap justify-content-between mt-4 w-100">
-
                 <!-- Case Status Chart -->
-                <div class="case-status-chart flex-grow-1 me-3" style="width: 200px;">
-                    <h5>Case Status Overview</h5>
-                    <canvas id="caseStatusChart"></canvas>
-                </div>
-
-                <!-- User List -->
-                <div class="user-list">
-                    <h5 class="text-center mb-3">Legal Advisor Users Information  </h5>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover table-bordered">
-                            <thead class="table-dark text-center">
-                                <tr>
-                                    <th>Full Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>User Type</th>
-                                    <th>Date Joined</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for user in users %}
-                                <tr>
-                                    <td>{{ user.fullname }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>{{ user.phone_number }}</td>
-                                    <td>{{ user.get_user_type_display }}</td>
-                                    <td>{{ user.date_joined|date:"Y-m-d" }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted">No users found.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="chart-container d-flex justify-content-between mt-4">
+                    <div class="case-status-chart" style="flex: 1; margin-right: 20px;">
+                        <h5>Case Status Overview</h5>
+                        <canvas id="caseStatusChart"></canvas>
                     </div>
                 </div>
-                
             </div>
         </div>
     </div>
     
-    <!-- Bootstrap and Chart.js -->
+    <!-- JS Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <script>
         try {
             const ctx = document.getElementById('caseStatusChart').getContext('2d');
             const caseStatusChart = new Chart(ctx, {
-                type: 'doughnut',
+                type: 'bar', // Changed from 'pie' to 'bar'
                 data: {
                     labels: ['Under Investigation', 'Resolved'],
                     datasets: [{
                         label: 'Case Status Distribution',
                         data: [{{ cases_under_investigation|default:0 }}, {{ resolved_cases|default:0 }}],
-                        backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)'],
-                        borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)', // Blue
+                            'rgba(75, 192, 192, 0.6)' // Green
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)', // Blue border
+                            'rgba(75, 192, 192, 1)' // Green border
+                        ],
                         borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true // Ensures the chart starts from zero
+                        }
+                    },
                     plugins: {
                         legend: {
                             position: 'top',
@@ -333,62 +291,4 @@
             console.error("Error rendering chart:", error);
         }
     </script>
-    
-    <style>
-        .stat-box {
-            padding: 20px;
-            background: linear-gradient(to right, #007bff, #00c6ff);
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-    
-        .stat-box:hover {
-            transform: scale(1.05);
-        }
-    
-        .user-list {
-            padding: 15px;
-            border-radius: 10px;
-            background: white;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-    
-        .user-list h5 {
-            margin-bottom: 15px;
-        }
-        .case-status-chart{
-            width: 390px;
-        }
-        .user-list {
-            padding: 15px;
-            border-radius: 10px;
-            background: white;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .table-responsive {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .table {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        thead.table-dark {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .table-hover tbody tr:hover {
-            background: rgba(0, 123, 255, 0.1);
-            transition: 0.3s;
-}
-
-    </style>
     

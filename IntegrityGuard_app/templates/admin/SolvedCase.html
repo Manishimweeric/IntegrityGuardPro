@@ -10,14 +10,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
  
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-         <!-- Include Bootstrap CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!-- Include jsPDF and autoTable -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.24/jspdf.plugin.autotable.min.js"></script>
-
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include jsPDF and autoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.24/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         body {
@@ -231,6 +227,15 @@
         .case-item:hover .case-icon i {
             color: #0056b3;
         }
+        
+        /* Date filter styling */
+        .date-filter {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 
@@ -291,53 +296,94 @@
 
             <div class="dashboard-container">
                 <div class="case-container text-left">
-                    <!-- <button class="btn btn-success" onclick="downloadTableAsPDF()">Download All as PDF</button> -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>List of Solved Cases</h3>
+                        <button class="btn btn-success" onclick="downloadTableAsPDF()">
+                            <i class="bi bi-file-earmark-pdf"></i> Download All as PDF
+                        </button>
+                    </div>
 
+                    <!-- Date Filter Section -->
+                    <div class="date-filter">
+                        <form method="GET" class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label for="from_date" class="form-label text-dark">From Date</label>
+                                <input type="date" class="form-control" id="from_date" name="from_date" value="{{ from_date }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="to_date" class="form-label text-dark">To Date</label>
+                                <input type="date" class="form-control" id="to_date" name="to_date" value="{{ to_date }}">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-search"></i> Filter
+                                </button>
+                                <a href="{% url 'admin_solved' %}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Reset
+                                </a>
+                            </div>
+                        </form>
+                    </div>
 
                     <div class="list-group mt-4">
                         {% if cases %}
                         <div class="mt-4">
-                            <h3 class="mb-5">List of Solved Cases</h3>
-                            <table class="table table-striped ">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">#</th>
-                                        <th scope="col">Title</th>
-                                        <th scope="col">Assigned to</th>
-                                        <th scope="col">Status</th>
-                                        <th scope="col">Created on</th>
-                                        <th scope="col">Feedback Message:</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for case in cases %}
-                                    <tr>
-                                        <th scope="row">{{ forloop.counter }}</th>
-                                        <td>{{ case.title }}</td>
-                                        <td>
-                                            {% if case.assigned_to %}
-                                            {{ case.assigned_to.fullname }}
-                                            {% else %}
-                                            New
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ case.status }}</td>
-                                        <td>{{ case.created_at|date:"M d, Y" }}</td>
-                                        <td class="col-md-4">
-                                            {% if case.reported %}
-                                                {{ case.reported }}
-                                            {% else %}
-                                                <span class="text-muted">Ask The Investigator Assigned to it. </span>
-                                            {% endif %}
-                                        </td>
-                                                                              
-                                    </tr>                           
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Title</th>
+                                            <th scope="col">Assigned to</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Created on</th>
+                                            <th scope="col">Feedback</th>
+                                            <th scope="col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for case in cases %}
+                                        <tr>
+                                            <th scope="row">{{ forloop.counter }}</th>
+                                            <td>{{ case.title }}</td>
+                                            <td>
+                                                {% if case.assigned_to %}
+                                                {{ case.assigned_to.fullname }}
+                                                {% else %}
+                                                New
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">{{ case.status }}</span>
+                                            </td>
+                                            <td>{{ case.created_at|date:"M d, Y" }}</td>
+                                            <td class="col-md-3">
+                                                {% if case.reported %}
+                                                    {{ case.reported|truncatechars:50 }}
+                                                {% else %}
+                                                    <span class="text-muted">Ask the investigator assigned to it.</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'case_detail' case.id %}" class="btn btn-sm btn-info">
+                                                    <i class="bi bi-eye"></i> View Details
+                                                </a>
+                                            </td>
+                                        </tr>                           
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                         {% else %}
-                        <p style="color: rgb(165, 31, 31); margin-top: 100px; margin-left: 20%;">No cases found for your account.</p>
+                        <div class="alert alert-warning text-center mt-5">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            {% if from_date and to_date %}
+                                No solved cases found between {{ from_date }} and {{ to_date }}.
+                            {% else %}
+                                No solved cases found.
+                            {% endif %}
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -349,21 +395,41 @@
                 function downloadTableAsPDF() {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
-            
-                    // Select the table element
-                    const table = document.querySelector('.table');
-            
+                    
+                    // Add a title to the PDF
+                    doc.setFontSize(18);
+                    doc.text('Solved Cases Report', 105, 15, { align: 'center' });
+                    
+                    {% if from_date and to_date %}
+                    doc.setFontSize(12);
+                    doc.text('Date range: {{ from_date }} to {{ to_date }}', 105, 25, { align: 'center' });
+                    {% endif %}
+                    
                     // Use autoTable to convert the HTML table into a PDF
-                    doc.autoTable({ html: table });
+                    doc.autoTable({ 
+                        html: '.table',
+                        startY: {% if from_date and to_date %}30{% else %}25{% endif %},
+                        styles: { 
+                            halign: 'center' 
+                        },
+                        columnStyles: {
+                            0: { cellWidth: 10 },
+                            5: { cellWidth: 50 }
+                        },
+                        didDrawCell: function(data) {
+                            // Hide the "Actions" column in the PDF
+                            if (data.column.index === 6) {
+                                data.cell.styles.fillColor = [255, 255, 255];
+                                data.cell.styles.textColor = [255, 255, 255];
+                            }
+                        }
+                    });
             
                     // Save the PDF as a file
-                    doc.save('cases_feedback_report.pdf');
+                    doc.save('solved_cases_report{% if from_date and to_date %}_{{ from_date }}_to_{{ to_date }}{% endif %}.pdf');
                 }
             </script>
-            
-           
-
-        
+        </div>
+    </div>
 </body>
-
 </html>

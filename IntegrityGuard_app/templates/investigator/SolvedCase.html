@@ -297,10 +297,6 @@
                 </div>
             </nav>
 
-
-
-
-
             <div class="dashboard-container">
                 <div class="case-container text-left">
                     <h2 class="mb-5"> Solved Cases </h2>
@@ -312,8 +308,28 @@
                         <button class="btn btn-primary px-4 py-2" onclick="downloadTableAsExcel()">
                             <i class="bi bi-file-earmark-excel"></i> Download as Excel
                         </button>
-                    </div>                 
-
+                    </div>       
+                      <!-- Date Filter Section -->
+                        <div class="date-filter mt-5">
+                            <form method="GET" class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label for="from_date" class="form-label text-dark">From Date</label>
+                                    <input type="date" class="form-control" id="from_date" name="from_date" value="{{ from_date }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="to_date" class="form-label text-dark">To Date</label>
+                                    <input type="date" class="form-control" id="to_date" name="to_date" value="{{ to_date }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="bi bi-search"></i> Filter
+                                    </button>
+                                    <a href="{% url 'investigetor_solved' %}" class="btn btn-secondary">
+                                        <i class="bi bi-x-circle"></i> Reset
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
 
                     {% if messages %}
                     <div class="alert alert-info alert-dismissible fade show" role="alert">

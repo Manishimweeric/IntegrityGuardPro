@@ -41,6 +41,7 @@ class Case(models.Model):
     reported_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reported_cases')
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_cases')
     Legal_assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='Legal_cases')
+    internal_Investigator=models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='internal_Investigator')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='reported')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -53,11 +54,14 @@ class Feedback(models.Model):
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='feedbacks')
     provided_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='provided_feedback')
     reported_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feedbacks')
+    reported_role = models.CharField(max_length=100,null=False, blank=True)
     feedback_message = models.TextField(max_length=255, blank=True, null=True)
     feedback_file = models.FileField(upload_to='feedback_files/',blank=True, null=True)
     provided_at = models.DateTimeField(auto_now_add=True)    
     def __str__(self):
         return f"Feedback for Case {self.case.id} by {self.uploaded_by.username}"
+    
+    
     
 
 class Evidence(models.Model):

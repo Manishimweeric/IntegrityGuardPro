@@ -31,6 +31,7 @@ urlpatterns = [
     path('userprofileadmin/',views.Updateadimn, name="Updatesadmin"),
     path('contact/',views.contact_view, name='contact'),
     path('contact_display/',views.contactus_display, name='contact_dicplayed'),
+    path('case_detail/<int:case_id>/', views.case_detail_view, name='case_detail'),
 
 
     path ('Legal_advisor/',views.LegalAdvisor, name="Legal_advisor"),
@@ -44,6 +45,14 @@ urlpatterns = [
      path('edit_case_Legal/<int:case_id>/', views.Legal_Assign_edit_case, name='Assigned_case_Legal_Advisor'),
      path('Ligal_assigned_case/<int:case_id>/assign/', views.Ligal_assigned_case, name='Ligal_assigned_case'),
      path('AddingEvidence/<int:case_id>/', views.Adding_Evidence_case, name='AddingEvidence'),
+
+
+     path('Assign_case_Internal_Investigator/<int:case_id>/', views.internal_Investigator_Assign_edit_case, name='Assign_case_Internal_Investigator'),
+     path('Internal_Investigator_Dashboard/', views.Internal_Investigator_Dashboard, name='Internal_Investigator_Dashboard'),
+     path('Internal_Investigator_Case/', views.Internal_Investigator_Case_views, name='Internal_Investigator_Case'),
+     path('Internal_Investigetor_feedback_case/<int:case_id>/assigned/', views.Internal_Investigetor_feedback_case, name='Internal_Investigetor_feedback_case'),
+
+
      
 ]   
 

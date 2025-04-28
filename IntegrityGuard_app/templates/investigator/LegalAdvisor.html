@@ -300,8 +300,13 @@
                                 <input type="text" name="phone_number" class="form-control p-3" placeholder="Phone Number" required>
                             </div>
                             <div class="mb-3">
-                                <input type="text" class="form-control p-3" placeholder="Role => legalAdvisor" readonly>
+                                <select class="form-control p-3" name="role" required>
+                                    <option value="">Select Role</option>
+                                    <option value="legalAdvisor">Legal Advisor</option>
+                                    <option value="internal_Investigator">Internal Investigator</option>
+                                </select>
                             </div>
+                            
                             <div class="mb-3">
                                 <input type="email" name="email" class="form-control p-3" placeholder="Email" required>
                             </div>  
@@ -310,17 +315,12 @@
                     </div>
                 </div>
             
-                <!-- Extra div -->
                 <div class="p-4 mt-5 border rounded shadow-lg bg-white position-relative" style="color: #333; min-width: 350px;">
-                    <!-- Decorative Ribbon -->
                     <div class="position-absolute top-0 start-0 bg-primary text-white px-3 py-1 rounded-bottom">
                         <i class="bi bi-info-circle"></i> Important Information
-                    </div>
-                
-                    <!-- Content Section -->
+                    </div>            
                     <div class="mt-4">
                         <p class="fs-5 fw-semibold text-dark">Before creating an account, please take note of the following:</p>
-                        
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item border-0">
                                 ✅ The default role assigned to the account is <strong>Legal Advisor</strong>.
